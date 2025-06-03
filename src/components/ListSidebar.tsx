@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useLists } from '../hooks/useLists';
-import { useTasks } from '../hooks/useTasks';
 
 export function ListSidebar() {
   const { lists, createList, updateList, deleteList } = useLists();

@@ -1,40 +1,82 @@
-# React + TypeScript + Vite
+# Tasky - A Todo PWA
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, offline-first Progressive Web App for managing your tasks and to-dos. Built with React, TypeScript, Vite, and Tailwind CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 📝 Create, edit, and delete tasks with titles, notes, due dates, and priorities
+- 📁 Organize tasks into customizable lists
+- 📅 View tasks due today in a dedicated view
+- 📱 Fully responsive design that works on mobile and desktop
+- ⚡ Offline-first functionality with service workers
+- 📦 Data persistence with IndexedDB
+- 🎨 Dark mode support
+- 🚀 Installable as a PWA
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- Node.js (v16 or later)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
+
+   ```bash
+   git clone https://github.com/your-username/tasky-pwa.git
+   cd tasky-pwa
+   ```
+
+2. Install dependencies
+
+   ```bash
+   npm install
+   # or
+   yarn
+   ```
+
+3. Start the development server
+
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+4. Open your browser and navigate to `http://localhost:5173`
+
+### Building for Production
+
+```bash
+npm run build
+# or
+yarn build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+This will create a production-ready build in the `dist` directory.
 
-```js
-// eslint.config.js
+## PWA Features
+
+- **Offline Support**: Works without an internet connection
+- **Installable**: Can be installed on your device's home screen
+- **Fast**: Loads quickly, even on slow networks
+- **Reliable**: Automatically caches assets for faster loading
+
+## Technologies Used
+
+- [React](https://reactjs.org/) - A JavaScript library for building user interfaces
+- [TypeScript](https://www.typescriptlang.org/) - Typed JavaScript
+- [Vite](https://vitejs.dev/) - Next Generation Frontend Tooling
+- [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework
+- [React Router](https://reactrouter.com/) - Declarative routing for React
+- [idb](https://github.com/jakearchibald/idb) - A tiny library that mostly mirrors the IndexedDB API
+- [date-fns](https://date-fns.org/) - Modern JavaScript date utility library
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
 import reactX from 'eslint-plugin-react-x'
 import reactDom from 'eslint-plugin-react-dom'
 
