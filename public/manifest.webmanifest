@@ -1,0 +1,21 @@
+{
+  "name": "Tasky - Todo PWA",
+  "short_name": "Tasky",
+  "description": "A Microsoft To Do clone as Progressive Web App",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#4F46E5",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
