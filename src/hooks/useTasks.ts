@@ -108,6 +108,30 @@ export function useTasks(listId?: string) {
     await updateTask(taskId, { completed: !task.completed });
   };
 
+  const reorderTasks = async (newOrder: Task[]) => {
+    if (!currentUser) throw new Error('Not authenticated');
+    
+    try {
+      // Update local state immediately for better UX
+      setTasks(newOrder);
+      
+      // Update each task's order in Firestore
+      const updatePromises = newOrder.map((task, index) => 
+        firestoreService.updateTask(task.id, { 
+          order: index,
+          updatedAt: new Date().toISOString()
+        })
+      );
+      
+      await Promise.all(updatePromises);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reorder tasks');
+      // Revert local state on error
+      refetch();
+      throw err;
+    }
+  };
+
   const refetch = async () => {
     if (listId && currentUser) {
       try {
@@ -132,6 +156,7 @@ export function useTasks(listId?: string) {
     updateTask,
     deleteTask,
     toggleComplete,
+    reorderTasks,
     refetch,
   };
 }
