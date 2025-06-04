@@ -1,40 +1,48 @@
 import { useState, useEffect } from 'react';
 import type { List } from '../types';
-import * as db from '../db';
+import { firestoreService } from '../services/firestoreService';
+import { useAuth } from '../contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
 
 export function useLists() {
   const [lists, setLists] = useState<List[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
-    loadLists();
-  }, []);
-
-  const loadLists = async () => {
-    try {
-      setLoading(true);
-      const allLists = await db.getAllLists();
-      setLists(allLists);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load lists');
-    } finally {
+    if (!currentUser) {
+      setLists([]);
       setLoading(false);
+      return;
     }
-  };
+
+    // Subscribe to real-time updates
+    const unsubscribe = firestoreService.subscribeToUserLists(
+      currentUser.uid,
+      (updatedLists) => {
+        setLists(updatedLists);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [currentUser]);
 
   const createList = async (name: string) => {
+    if (!currentUser) throw new Error('Not authenticated');
+    
     try {
-      const newList: List = {
-        id: uuidv4(),
+      const newListData: Omit<List, 'id' | 'createdAt' | 'updatedAt'> = {
         name,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdBy: currentUser.uid,
+        sharedWith: [],
       };
-      await db.createList(newList);
-      setLists([...lists, newList]);
-      return newList;
+      
+      const listId = await firestoreService.createList(newListData);
+      
+      // The real-time listener will update the state automatically
+      return { id: listId, ...newListData };
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create list');
       throw err;
@@ -42,17 +50,11 @@ export function useLists() {
   };
 
   const updateList = async (id: string, name: string) => {
+    if (!currentUser) throw new Error('Not authenticated');
+    
     try {
-      const list = lists.find(l => l.id === id);
-      if (!list) throw new Error('List not found');
-      
-      const updatedList: List = {
-        ...list,
-        name,
-        updatedAt: new Date().toISOString(),
-      };
-      await db.updateList(updatedList);
-      setLists(lists.map(l => l.id === id ? updatedList : l));
+      await firestoreService.updateList(id, { name });
+      // The real-time listener will update the state automatically
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update list');
       throw err;
@@ -60,12 +62,29 @@ export function useLists() {
   };
 
   const deleteList = async (id: string) => {
+    if (!currentUser) throw new Error('Not authenticated');
+    
     try {
-      await db.deleteList(id);
-      setLists(lists.filter(l => l.id !== id));
+      await firestoreService.deleteList(id);
+      // The real-time listener will update the state automatically
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete list');
       throw err;
+    }
+  };
+
+  const refetch = async () => {
+    if (!currentUser) return;
+    
+    try {
+      setLoading(true);
+      const userLists = await firestoreService.getUserLists(currentUser.uid);
+      const sharedLists = await firestoreService.getSharedLists(currentUser.uid);
+      setLists([...userLists, ...sharedLists]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load lists');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,6 +95,6 @@ export function useLists() {
     createList,
     updateList,
     deleteList,
-    refetch: loadLists,
+    refetch,
   };
 }

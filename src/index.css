@@ -1,23 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+    @apply bg-[#1f1f1f] text-white font-['Segoe_UI',_sans-serif];
+    font-feature-settings: 'liga' 1;
+  }
+  
+  /* Custom scrollbar styling for dark mode */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #404040 transparent;
+  }
+  
+  *::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    background: #404040;
+    border-radius: 3px;
+  }
+  
+  *::-webkit-scrollbar-thumb:hover {
+    background: #505050;
   }
 }
 
 @layer components {
-  .btn-primary {
-    @apply bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors;
+  .ms-card {
+    @apply bg-[#2d2d2d] rounded-lg shadow-lg border border-[#404040] transition-all duration-200;
   }
   
-  .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-lg font-medium transition-colors;
+  .ms-card:hover {
+    @apply shadow-xl border-[#505050];
   }
   
-  .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500;
+  .ms-button-primary {
+    @apply bg-[#0078d4] hover:bg-[#106ebe] text-white px-4 py-2.5 rounded-lg font-medium transition-all duration-200 shadow-lg;
+  }
+  
+  .ms-button-primary:hover {
+    @apply shadow-xl;
+  }
+  
+  .ms-button-secondary {
+    @apply bg-[#404040] hover:bg-[#505050] text-white px-4 py-2.5 rounded-lg font-medium transition-all duration-200 border border-[#505050];
+  }
+  
+  .ms-input {
+    @apply w-full px-4 py-3 border border-[#505050] rounded-lg bg-[#2d2d2d] text-white focus:outline-none focus:ring-2 focus:ring-[#0078d4]/40 focus:border-[#0078d4] transition-all duration-200 placeholder-gray-400;
+  }
+  
+  .ms-sidebar-item {
+    @apply flex items-center justify-between px-4 py-3 mx-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-[#404040] text-gray-300 hover:text-white;
+  }
+  
+  .ms-sidebar-item.active {
+    @apply bg-[#0078d4]/20 text-[#4cc2ff] font-semibold;
+  }
+  
+  .ms-sidebar-category {
+    @apply flex items-center px-4 py-3 mx-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-[#404040] text-gray-300 hover:text-white cursor-pointer;
+  }
+  
+  .ms-sidebar-category.active {
+    @apply bg-[#0078d4]/20 text-[#4cc2ff] font-semibold;
+  }
+  
+  .ms-task-item {
+    @apply bg-[#2d2d2d] border border-[#404040] rounded-lg p-5 transition-all duration-200 hover:shadow-lg hover:border-[#505050];
+  }
+  
+  .ms-checkbox {
+    @apply w-5 h-5 rounded-full border-2 border-gray-500 transition-all duration-200 hover:border-[#0078d4] cursor-pointer relative;
+  }
+  
+  .ms-checkbox.checked {
+    @apply bg-[#0078d4] border-[#0078d4];
+  }
+  
+  .ms-user-profile {
+    @apply flex items-center gap-3 p-4 border-b border-[#404040] mb-2;
+  }
+  
+  .ms-user-avatar {
+    @apply w-10 h-10 rounded-full bg-gradient-to-br from-[#0078d4] to-[#4cc2ff] flex items-center justify-center text-white font-bold text-sm;
+  }
+  
+  .ms-count-badge {
+    @apply bg-[#404040] text-gray-300 text-xs px-2 py-1 rounded-full font-medium;
+  }
+  
+  .ms-list-icon {
+    @apply w-5 h-5 mr-3 text-gray-400;
   }
 }
