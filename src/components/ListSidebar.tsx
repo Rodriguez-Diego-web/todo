@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useLists } from '../hooks/useLists';
 import { firestoreService } from '../services/firestoreService';
@@ -21,6 +21,30 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'editor' | 'viewer'>('editor');
   const [isInviting, setIsInviting] = useState(false);
+  const [taskCounts, setTaskCounts] = useState<Record<string, number>>({});
+
+  // Load task counts for all lists with real-time updates
+  useEffect(() => {
+    if (lists.length === 0) return;
+
+    const unsubscribers: (() => void)[] = [];
+    const counts: Record<string, number> = {};
+
+    // Subscribe to each list's tasks for real-time updates
+    lists.forEach(list => {
+      const unsubscribe = firestoreService.subscribeToListTasks(list.id, (tasks) => {
+        // Count incomplete tasks only
+        counts[list.id] = tasks.filter(task => !task.completed).length;
+        setTaskCounts({...counts});
+      });
+      unsubscribers.push(unsubscribe);
+    });
+
+    // Cleanup function
+    return () => {
+      unsubscribers.forEach(unsubscribe => unsubscribe());
+    };
+  }, [lists]);
 
   const handleCreateList = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,15 +99,9 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
     }
   };
 
-  // Mock task counts - in real app this would come from the task data
+  // Get real task count for a list
   const getTaskCount = (listId: string) => {
-    const mockCounts: Record<string, number> = {
-      'list-1': 48,
-      'list-2': 22,
-      'list-3': 5,
-      'list-4': 16,
-    };
-    return mockCounts[listId] || Math.floor(Math.random() * 50);
+    return taskCounts[listId] || 0;
   };
 
   const currentList = lists.find(l => l.id === shareListId);
