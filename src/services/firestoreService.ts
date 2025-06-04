@@ -56,8 +56,13 @@ export class FirestoreService {
 
   // Update a list
   async updateList(listId: string, updates: Partial<Omit<List, 'id' | 'createdAt'>>): Promise<void> {
+    // Filter out undefined values that Firestore doesn't allow
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([, value]) => value !== undefined)
+    );
+    
     await updateDoc(doc(db, 'lists', listId), {
-      ...updates,
+      ...cleanUpdates,
       updatedAt: serverTimestamp()
     });
   }
@@ -140,8 +145,13 @@ export class FirestoreService {
 
   // Update a task
   async updateTask(taskId: string, updates: Partial<Omit<Task, 'id'>>): Promise<void> {
+    // Filter out undefined values that Firestore doesn't allow
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([, value]) => value !== undefined)
+    );
+    
     await updateDoc(doc(db, 'tasks', taskId), {
-      ...updates,
+      ...cleanUpdates,
       updatedAt: serverTimestamp()
     });
   }
