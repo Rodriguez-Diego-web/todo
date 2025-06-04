@@ -6,11 +6,14 @@ import { Today } from './pages/Today';
 import { ListPage } from './pages/ListPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthModal } from './components/AuthModal';
+import { SplashScreens } from './components/SplashScreens';
+import { useSplashScreens } from './hooks/useSplashScreens';
 import './index.css';
 
 function AppContent() {
   const { currentUser, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const { showSplashScreens, isLoading: splashLoading, completeSplashScreens } = useSplashScreens();
 
   useEffect(() => {
     // Initialize IndexedDB when the app loads (for offline fallback)
@@ -19,14 +22,15 @@ function AppContent() {
 
   useEffect(() => {
     // Show auth modal if user is not authenticated and not loading
-    if (!loading && !currentUser) {
+    if (!loading && !currentUser && !showSplashScreens) {
       setShowAuthModal(true);
     } else {
       setShowAuthModal(false);
     }
-  }, [currentUser, loading]);
+  }, [currentUser, loading, showSplashScreens]);
 
-  if (loading) {
+  // Show loading state while checking splash screen status
+  if (loading || splashLoading) {
     return (
       <div className="min-h-screen bg-[#1f1f1f] flex items-center justify-center">
         <div className="flex items-center space-x-2">
@@ -35,6 +39,11 @@ function AppContent() {
         </div>
       </div>
     );
+  }
+
+  // Show splash screens for new users
+  if (showSplashScreens) {
+    return <SplashScreens onComplete={completeSplashScreens} />;
   }
 
   return (

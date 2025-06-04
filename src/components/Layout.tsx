@@ -4,6 +4,7 @@ import { ListSidebar } from './ListSidebar';
 import { useAuth } from '../contexts/AuthContext';
 import { InvitationsModal } from './InvitationsModal';
 import { useInvitations } from '../hooks/useInvitations';
+import { useSplashScreens } from '../hooks/useSplashScreens';
 import React from 'react';
 
 export function Layout() {
@@ -12,6 +13,7 @@ export function Layout() {
   const [invitationsOpen, setInvitationsOpen] = useState(false);
   const { userProfile, signOut } = useAuth();
   const { invitations } = useInvitations();
+  const { resetSplashScreens } = useSplashScreens();
   
   const defaultCategories = [
     { id: 'today', name: 'Mein Tag', icon: 'sun', path: '/', count: 0 },
@@ -138,6 +140,22 @@ export function Layout() {
             <div className="border-t border-[#404040] mt-4 pt-4">
               <ListSidebar onNavigate={() => setSidebarOpen(false)} />
             </div>
+            
+            {/* Settings/Actions */}
+            <div className="mt-auto pt-4 border-t border-[#404040]">
+              <button
+                onClick={() => {
+                  resetSplashScreens();
+                  setSidebarOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-[#404040] rounded-lg transition-colors text-sm"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Onboarding anzeigen
+              </button>
+            </div>
           </nav>
         </div>
       </div>
@@ -186,6 +204,19 @@ export function Layout() {
           
           <div className="border-t border-[#404040] mt-4 pt-4">
             <ListSidebar />
+          </div>
+          
+          {/* Settings/Actions */}
+          <div className="mt-auto pt-4 border-t border-[#404040]">
+            <button
+              onClick={resetSplashScreens}
+              className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-[#404040] rounded-lg transition-colors text-sm"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Onboarding anzeigen
+            </button>
           </div>
         </nav>
       </div>
