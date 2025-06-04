@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTasks } from '../hooks/useTasks';
 import { useLists } from '../hooks/useLists';
 import { DragDropTaskList } from '../components/DragDropTaskList';
 import { AddTask } from '../components/AddTask';
+import { firestoreService } from '../services/firestoreService';
+import { useAuth } from '../contexts/AuthContext';
 import type { Task } from '../types';
 import type { Timestamp } from 'firebase/firestore';
 
@@ -12,6 +14,11 @@ export function ListPage() {
   const navigate = useNavigate();
   const { lists } = useLists();
   const { tasks, loading, error, createTask, updateTask, toggleComplete, deleteTask, reorderTasks } = useTasks(listId);
+  const { currentUser } = useAuth();
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'editor' | 'viewer'>('editor');
+  const [isInviting, setIsInviting] = useState(false);
   
   const currentList = lists.find(l => l.id === listId);
 
@@ -52,6 +59,30 @@ export function ListPage() {
   const handleTaskReorder = async (newOrder: Task[]) => {
     if (!listId) return;
     await reorderTasks(newOrder);
+  };
+
+  const handleSendInvitation = async () => {
+    if (!currentUser || !listId || !inviteEmail.trim()) return;
+    
+    setIsInviting(true);
+    try {
+      await firestoreService.createInvitation({
+        listId,
+        inviterUserId: currentUser.uid,
+        inviteeEmail: inviteEmail.trim(),
+        status: 'pending'
+      });
+      
+      // Reset form and close modal
+      setInviteEmail('');
+      setShowShareModal(false);
+      alert('Einladung erfolgreich gesendet!');
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      alert('Fehler beim Senden der Einladung. Bitte versuchen Sie es erneut.');
+    } finally {
+      setIsInviting(false);
+    }
   };
 
   if (loading) {
@@ -133,6 +164,19 @@ export function ListPage() {
         <AddTask onAdd={handleAddTask} />
       </div>
 
+      {/* Mobile Share Button */}
+      <div className="mb-4 md:hidden">
+        <button
+          onClick={() => setShowShareModal(true)}
+          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Personen einladen
+        </button>
+      </div>
+
       {tasks.length === 0 ? (
         <div className="text-center py-12">
           <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,6 +230,85 @@ export function ListPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#2d2d2d] rounded-lg w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-[#404040]">
+              <h3 className="text-lg font-semibold text-white">
+                Liste teilen: {currentList?.name}
+              </h3>
+              <button 
+                onClick={() => setShowShareModal(false)}
+                className="p-1 hover:bg-[#404040] rounded"
+              >
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  E-Mail-Adresse eingeben
+                </label>
+                <input
+                  type="email"
+                  placeholder="beispiel@email.com"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="w-full bg-[#1f1f1f] border border-[#404040] rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Berechtigung
+                </label>
+                <select 
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value as 'editor' | 'viewer')}
+                  className="w-full bg-[#1f1f1f] border border-[#404040] rounded-lg px-3 py-2 text-white"
+                >
+                  <option value="editor">Bearbeiten</option>
+                  <option value="viewer">Nur anzeigen</option>
+                </select>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setShowShareModal(false)}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors"
+                  disabled={isInviting}
+                >
+                  Abbrechen
+                </button>
+                <button 
+                  onClick={handleSendInvitation}
+                  disabled={!inviteEmail.trim() || isInviting}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isInviting ? 'Sende...' : 'Einladung senden'}
+                </button>
+              </div>
+              
+              {/* Shared with info */}
+              {currentList?.sharedWith && currentList.sharedWith.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-[#404040]">
+                  <h4 className="text-sm font-medium text-gray-300 mb-3">
+                    Geteilt mit {currentList.sharedWith.length} Personen
+                  </h4>
+                  <p className="text-xs text-gray-400">
+                    Geteilte Benutzer werden hier angezeigt, sobald sie die Einladung annehmen.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
