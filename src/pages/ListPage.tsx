@@ -5,6 +5,7 @@ import { useLists } from '../hooks/useLists';
 import { DragDropTaskList } from '../components/DragDropTaskList';
 import { AddTask } from '../components/AddTask';
 import type { Task } from '../types';
+import type { Timestamp } from 'firebase/firestore';
 
 export function ListPage() {
   const { listId } = useParams<{ listId: string }>();
@@ -19,6 +20,15 @@ export function ListPage() {
       navigate('/');
     }
   }, [currentList, lists, loading, navigate]);
+
+  // Helper function to convert Timestamp to Date
+  const toDate = (timestamp: string | Timestamp): Date => {
+    if (typeof timestamp === 'string') {
+      return new Date(timestamp);
+    }
+    // Firebase Timestamp
+    return timestamp.toDate();
+  };
 
   const handleAddTask = async (
     title: string, 
@@ -73,15 +83,33 @@ export function ListPage() {
     return null;
   }
 
-  // Sort tasks by priority (High -> Medium -> Low) and creation time
+  // Sort tasks: first by completion status, then by manual order (if exists), then by priority, then by creation time
   const sortedTasks = [...tasks].sort((a, b) => {
+    // 1. Incomplete tasks first
     if (a.completed !== b.completed) {
-      return a.completed ? 1 : -1; // Incomplete tasks first
+      return a.completed ? 1 : -1;
     }
+    
+    // 2. If both have manual order, use that
+    if (typeof a.order === 'number' && typeof b.order === 'number') {
+      return a.order - b.order;
+    }
+    
+    // 3. If only one has order, it comes first
+    if (typeof a.order === 'number' && typeof b.order !== 'number') {
+      return -1;
+    }
+    if (typeof a.order !== 'number' && typeof b.order === 'number') {
+      return 1;
+    }
+    
+    // 4. Priority sorting (higher priority first)
     if (a.priority !== b.priority) {
-      return b.priority - a.priority; // Higher priority first
+      return b.priority - a.priority;
     }
-    return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+    
+    // 5. Creation time (newer first)
+    return toDate(a.updatedAt).getTime() - toDate(b.updatedAt).getTime();
   });
 
   const incompleteTasks = sortedTasks.filter(t => !t.completed);
