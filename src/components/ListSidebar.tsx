@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useLists } from '../hooks/useLists';
+import { firestoreService } from '../services/firestoreService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ListSidebarProps {
   onNavigate?: () => void;
@@ -8,6 +10,7 @@ interface ListSidebarProps {
 
 export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
   const { lists, createList, updateList, deleteList } = useLists();
+  const { currentUser } = useAuth();
   const { listId } = useParams();
   const [isCreating, setIsCreating] = useState(false);
   const [newListName, setNewListName] = useState('');
@@ -15,6 +18,9 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
   const [editName, setEditName] = useState('');
   const [hoveredList, setHoveredList] = useState<string | null>(null);
   const [shareListId, setShareListId] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'editor' | 'viewer'>('editor');
+  const [isInviting, setIsInviting] = useState(false);
 
   const handleCreateList = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +47,32 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
 
   const handleShareList = (id: string) => {
     setShareListId(id);
+    setInviteEmail('');
+    setInviteRole('editor');
+  };
+
+  const handleSendInvitation = async () => {
+    if (!currentUser || !shareListId || !inviteEmail.trim()) return;
+    
+    setIsInviting(true);
+    try {
+      await firestoreService.createInvitation({
+        listId: shareListId,
+        inviterUserId: currentUser.uid,
+        inviteeEmail: inviteEmail.trim(),
+        status: 'pending'
+      });
+      
+      // Reset form and close modal
+      setInviteEmail('');
+      setShareListId(null);
+      alert('Einladung erfolgreich gesendet!');
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      alert('Fehler beim Senden der Einladung. Bitte versuchen Sie es erneut.');
+    } finally {
+      setIsInviting(false);
+    }
   };
 
   // Mock task counts - in real app this would come from the task data
@@ -53,6 +85,8 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
     };
     return mockCounts[listId] || Math.floor(Math.random() * 50);
   };
+
+  const currentList = lists.find(l => l.id === shareListId);
 
   return (
     <div className="px-1">
@@ -81,7 +115,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                   className="ms-input text-sm py-2"
                 />
               </form>
-            ) : (
+            ) :
               <Link
                 to={`/list/${list.id}`}
                 onClick={onNavigate}
@@ -161,7 +195,9 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#2d2d2d] rounded-lg p-6 w-96 max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Liste teilen</h3>
+              <h3 className="text-lg font-semibold text-white">
+                Liste teilen: {currentList?.name}
+              </h3>
               <button 
                 onClick={() => setShareListId(null)}
                 className="p-1 hover:bg-[#404040] rounded"
@@ -180,6 +216,8 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                 <input
                   type="email"
                   placeholder="beispiel@email.com"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
                   className="ms-input"
                 />
               </div>
@@ -189,7 +227,11 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Berechtigung
                   </label>
-                  <select className="ms-input">
+                  <select 
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value as 'editor' | 'viewer')}
+                    className="ms-input"
+                  >
                     <option value="editor">Bearbeiten</option>
                     <option value="viewer">Nur anzeigen</option>
                   </select>
@@ -200,41 +242,31 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                 <button
                   onClick={() => setShareListId(null)}
                   className="flex-1 ms-button-secondary"
+                  disabled={isInviting}
                 >
                   Abbrechen
                 </button>
-                <button className="flex-1 ms-button-primary">
-                  Einladung senden
+                <button 
+                  onClick={handleSendInvitation}
+                  disabled={!inviteEmail.trim() || isInviting}
+                  className="flex-1 ms-button-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isInviting ? 'Sende...' : 'Einladung senden'}
                 </button>
               </div>
             </div>
             
-            {/* Current collaborators */}
-            <div className="mt-6 pt-4 border-t border-[#404040]">
-              <h4 className="text-sm font-medium text-gray-300 mb-3">Geteilt mit</h4>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3 p-2 bg-[#404040]/30 rounded-lg">
-                  <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    JD
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-white">John Doe</p>
-                    <p className="text-xs text-gray-400">john@example.com</p>
-                  </div>
-                  <span className="text-xs text-gray-400">Bearbeiter</span>
-                </div>
-                <div className="flex items-center gap-3 p-2 bg-[#404040]/30 rounded-lg">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    AS
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-white">Anna Schmidt</p>
-                    <p className="text-xs text-gray-400">anna@example.com</p>
-                  </div>
-                  <span className="text-xs text-gray-400">Betrachter</span>
-                </div>
+            {/* Shared with info */}
+            {currentList?.sharedWith && currentList.sharedWith.length > 0 && (
+              <div className="mt-6 pt-4 border-t border-[#404040]">
+                <h4 className="text-sm font-medium text-gray-300 mb-3">
+                  Geteilt mit {currentList.sharedWith.length} Personen
+                </h4>
+                <p className="text-xs text-gray-400">
+                  Geteilte Benutzer werden hier angezeigt, sobald sie die Einladung annehmen.
+                </p>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
