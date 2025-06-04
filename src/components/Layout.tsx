@@ -2,12 +2,16 @@ import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ListSidebar } from './ListSidebar';
 import { useAuth } from '../contexts/AuthContext';
+import { InvitationsModal } from './InvitationsModal';
+import { useInvitations } from '../hooks/useInvitations';
 import React from 'react';
 
 export function Layout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [invitationsOpen, setInvitationsOpen] = useState(false);
   const { userProfile, signOut } = useAuth();
+  const { invitations } = useInvitations();
   
   const defaultCategories = [
     { id: 'today', name: 'Mein Tag', icon: 'sun', path: '/', count: 0 },
@@ -37,6 +41,23 @@ export function Layout() {
     };
     return icons[iconName] || icons.sun;
   };
+
+  const NotificationBell = () => (
+    <button
+      onClick={() => setInvitationsOpen(true)}
+      className="relative p-2 hover:bg-[#404040] rounded-lg transition-colors"
+      title="Einladungen"
+    >
+      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-3-3V9a5 5 0 00-10 0v5l-3 3h5m6 0v1a3 3 0 01-6 0v-1m6 0H9" />
+      </svg>
+      {invitations.length > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          {invitations.length}
+        </span>
+      )}
+    </button>
+  );
   
   return (
     <div className="min-h-screen bg-[#1f1f1f] flex flex-col md:flex-row">
@@ -52,15 +73,18 @@ export function Layout() {
           </svg>
         </button>
         <h1 className="text-lg font-semibold text-white">To Do</h1>
-        <button
-          onClick={handleSignOut}
-          className="p-2 rounded-lg hover:bg-[#404040] transition-colors"
-          title="Abmelden"
-        >
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <button
+            onClick={handleSignOut}
+            className="p-2 rounded-lg hover:bg-[#404040] transition-colors"
+            title="Abmelden"
+          >
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
       </header>
       
       {/* Sidebar - Mobile */}
@@ -79,6 +103,7 @@ export function Layout() {
               <h3 className="font-medium text-white">{userProfile?.name || 'User'}</h3>
             </div>
             <div className="flex items-center gap-2">
+              <NotificationBell />
               <button
                 onClick={handleSignOut}
                 className="p-2 hover:bg-[#404040] rounded-lg transition-colors"
@@ -128,6 +153,7 @@ export function Layout() {
             <h3 className="font-medium text-white">{userProfile?.name || 'User'}</h3>
           </div>
           <div className="flex items-center gap-2">
+            <NotificationBell />
             <button
               onClick={handleSignOut}
               className="p-2 hover:bg-[#404040] rounded-lg transition-colors"
@@ -168,6 +194,12 @@ export function Layout() {
       <main className="flex-1 flex flex-col min-h-0">
         <Outlet />
       </main>
+
+      {/* Invitations Modal */}
+      <InvitationsModal 
+        isOpen={invitationsOpen} 
+        onClose={() => setInvitationsOpen(false)} 
+      />
     </div>
   );
 }

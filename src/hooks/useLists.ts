@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { List } from '../types';
 import { firestoreService } from '../services/firestoreService';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,6 +9,30 @@ export function useLists() {
   const [error, setError] = useState<string | null>(null);
   const { currentUser } = useAuth();
 
+  const loadAllLists = useCallback(async () => {
+    if (!currentUser) return;
+    
+    try {
+      setLoading(true);
+      const [userLists, sharedLists] = await Promise.all([
+        firestoreService.getUserLists(currentUser.uid),
+        firestoreService.getSharedLists(currentUser.uid)
+      ]);
+      
+      // Combine and deduplicate lists
+      const allLists = [...userLists, ...sharedLists];
+      const uniqueLists = allLists.filter((list, index, self) => 
+        index === self.findIndex(l => l.id === list.id)
+      );
+      
+      setLists(uniqueLists);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load lists');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser]);
+
   useEffect(() => {
     if (!currentUser) {
       setLists([]);
@@ -16,17 +40,30 @@ export function useLists() {
       return;
     }
 
-    // Subscribe to real-time updates
-    const unsubscribe = firestoreService.subscribeToUserLists(
+    // Load both owned and shared lists
+    loadAllLists();
+    
+    // Subscribe to real-time updates for owned lists
+    const unsubscribeOwned = firestoreService.subscribeToUserLists(
       currentUser.uid,
-      (updatedLists) => {
-        setLists(updatedLists);
-        setLoading(false);
+      () => {
+        loadAllLists(); // Reload all lists when owned lists change
       }
     );
 
-    return () => unsubscribe();
-  }, [currentUser]);
+    // Subscribe to real-time updates for shared lists
+    const unsubscribeShared = firestoreService.subscribeToSharedLists(
+      currentUser.uid,
+      () => {
+        loadAllLists(); // Reload all lists when shared lists change
+      }
+    );
+
+    return () => {
+      unsubscribeOwned();
+      unsubscribeShared();
+    };
+  }, [currentUser, loadAllLists]);
 
   const createList = async (name: string) => {
     if (!currentUser) throw new Error('Not authenticated');
@@ -72,20 +109,7 @@ export function useLists() {
     }
   };
 
-  const refetch = async () => {
-    if (!currentUser) return;
-    
-    try {
-      setLoading(true);
-      const userLists = await firestoreService.getUserLists(currentUser.uid);
-      const sharedLists = await firestoreService.getSharedLists(currentUser.uid);
-      setLists([...userLists, ...sharedLists]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load lists');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const refetch = loadAllLists;
 
   return {
     lists,

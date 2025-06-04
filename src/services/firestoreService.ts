@@ -100,6 +100,20 @@ export class FirestoreService {
     });
   }
 
+  // Listen to shared lists in real-time
+  subscribeToSharedLists(userId: string, callback: (lists: List[]) => void): Unsubscribe {
+    const q = query(
+      collection(db, 'lists'),
+      where('sharedWith', 'array-contains', userId),
+      orderBy('updatedAt', 'desc')
+    );
+    
+    return onSnapshot(q, (snapshot) => {
+      const lists = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as List));
+      callback(lists);
+    });
+  }
+
   // ============ TASKS ============
   
   // Get all tasks for a list
