@@ -1,14 +1,13 @@
 /* PWA Layout Fixes */
 html {
   height: 100%;
-  /* Prevent iOS rubber-band scrolling */
-  position: fixed;
   width: 100%;
   overflow: hidden;
 }
 
 body {
   height: 100%;
+  width: 100%;
   overflow: hidden;
   /* Prevent iOS bounce effect */
   overscroll-behavior: none;
@@ -23,8 +22,14 @@ body {
 /* Fix for mobile keyboard issues in PWA */
 @supports (-webkit-touch-callout: none) {
   /* iOS specific fixes */
-  .h-full {
+  body {
+    /* Use dynamic viewport height */
+    height: 100vh;
     height: -webkit-fill-available;
+  }
+  
+  #root {
+    height: 100%;
   }
 }
 

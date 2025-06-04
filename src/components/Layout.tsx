@@ -62,7 +62,7 @@ export function Layout() {
   return (
     <div className="h-full bg-[#1f1f1f] flex flex-col md:flex-row">
       {/* Mobile header */}
-      <header className="md:hidden bg-[#2d2d2d] border-b border-[#404040] p-4 flex items-center justify-between sticky top-0 z-30 shadow-lg">
+      <header className="md:hidden bg-[#2d2d2d] border-b border-[#404040] px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] flex items-center justify-between sticky top-0 z-30 shadow-lg">
         <button 
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-2 rounded-lg hover:bg-[#404040] transition-colors"
@@ -93,7 +93,7 @@ export function Layout() {
           className="fixed inset-0 bg-black bg-opacity-50"
           onClick={() => setSidebarOpen(false)}
         ></div>
-        <div className="fixed inset-y-0 left-0 w-80 bg-[#2d2d2d] shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col">
+        <div className="fixed inset-y-0 left-0 w-80 bg-[#2d2d2d] shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col pt-safe-top">
           {/* User Profile */}
           <div className="ms-user-profile">
             <div className="ms-user-avatar">
