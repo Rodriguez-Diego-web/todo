@@ -49,7 +49,7 @@ export function Today() {
 
   if (loading) {
     return (
-      <div className="p-4 md:p-8 max-w-4xl mx-auto">
+      <div className="p-4 md:p-8 w-full">
         <div className="animate-pulse">
           <div className="h-8 bg-[#404040] rounded w-1/4 mb-6"></div>
           <div className="space-y-3">
@@ -64,7 +64,7 @@ export function Today() {
 
   if (error) {
     return (
-      <div className="p-4 md:p-8 max-w-4xl mx-auto">
+      <div className="p-4 md:p-8 w-full">
         <div className="bg-red-900/20 border border-red-800 rounded-lg p-4">
           <p className="text-red-400">Fehler: {error}</p>
         </div>
@@ -112,7 +112,7 @@ export function Today() {
   });
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto">
+    <div className="p-4 md:p-8 w-full">
       {/* Header - Mobile optimized */}
       <header className="mb-6">
         <div className="flex items-center gap-3 mb-2">

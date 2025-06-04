@@ -90,7 +90,7 @@ export function ListPage() {
 
   if (loading) {
     return (
-      <div className="p-4 md:p-8">
+      <div className="p-4 md:p-8 w-full">
         <div className="animate-pulse">
           <div className="h-8 bg-[#404040] rounded w-1/4 mb-6"></div>
           <div className="space-y-3">
@@ -105,7 +105,7 @@ export function ListPage() {
 
   if (error) {
     return (
-      <div className="p-4 md:p-8">
+      <div className="p-4 md:p-8 w-full">
         <div className="bg-red-900/20 border border-red-800 rounded-lg p-4">
           <p className="text-red-400">Fehler: {error}</p>
         </div>
@@ -150,7 +150,7 @@ export function ListPage() {
   const completedTasks = sortedTasks.filter(t => t.completed);
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto">
+    <div className="p-4 md:p-8 w-full">
       {/* Header - Mobile optimized */}
       <header className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">{currentList.name}</h1>
