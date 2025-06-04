@@ -1,9 +1,11 @@
-const CACHE_NAME = 'tasky-v1';
+const CACHE_NAME = 'taskly-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/vite.svg'
+  '/icon.png',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 // Install event - cache static assets

@@ -72,7 +72,7 @@ export function Layout() {
             <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
           </svg>
         </button>
-        <h1 className="text-lg font-semibold text-white">To Do</h1>
+        <h1 className="text-lg font-semibold text-white">Taskly</h1>
         <div className="flex items-center gap-2">
           <NotificationBell />
           <button

@@ -1,0 +1,18 @@
+TASKLY ICON SETUP
+=================
+
+Please add the following icon files to the public/ folder:
+
+1. icon.png - Your icon file (from @icon.png) 
+   This will be used as the main favicon
+
+2. icon-192.png - Your icon resized to 192x192 pixels
+   This will be used for PWA app icon (Android)
+
+3. icon-512.png - Your icon resized to 512x512 pixels  
+   This will be used for PWA splash screen
+
+You can use the same @icon.png file for all three if you want,
+or resize them appropriately for better quality.
+
+After adding the files, delete this ICONS_NEEDED.txt file. 
