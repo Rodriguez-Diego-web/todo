@@ -14,7 +14,7 @@ import {
   type Unsubscribe
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import type { Task, List, Invitation, ListPermission } from '../types';
+import type { Task, List, Invitation } from '../types';
 
 export class FirestoreService {
   // ============ LISTS ============
@@ -126,8 +126,13 @@ export class FirestoreService {
 
   // Create a new task
   async createTask(task: Omit<Task, 'id' | 'updatedAt'>): Promise<string> {
+    // Filter out undefined values that Firestore doesn't allow
+    const cleanTask = Object.fromEntries(
+      Object.entries(task).filter(([, value]) => value !== undefined)
+    );
+    
     const docRef = await addDoc(collection(db, 'tasks'), {
-      ...task,
+      ...cleanTask,
       updatedAt: serverTimestamp()
     });
     return docRef.id;
@@ -214,7 +219,7 @@ export class FirestoreService {
       userId,
       role,
       grantedAt: serverTimestamp()
-    } as Omit<ListPermission, 'grantedAt'> & { grantedAt: any });
+    });
   }
 
   // Check if user has access to list
