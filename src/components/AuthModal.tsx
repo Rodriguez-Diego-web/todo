@@ -88,15 +88,15 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#2d2d2d] rounded-lg w-full max-w-md">
+      <div className="bg-black rounded-lg w-full max-w-md border border-gray-800">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#404040]">
+        <div className="flex items-center justify-between p-6 border-b border-gray-800">
           <h2 className="text-xl font-semibold text-white">
             {isLogin ? 'Anmelden' : 'Registrieren'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-[#404040] rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
           >
             <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -111,7 +111,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[#404040] rounded-lg hover:bg-[#404040] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-800 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -127,10 +127,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#404040]" />
+              <div className="w-full border-t border-gray-800" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[#2d2d2d] text-gray-400">oder</span>
+              <span className="px-2 bg-black text-gray-400">oder</span>
             </div>
           </div>
 
@@ -189,7 +189,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#47a528] hover:bg-[#3d8b22] text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Lädt...' : (isLogin ? 'Anmelden' : 'Registrieren')}
             </button>
@@ -200,7 +200,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <button
               type="button"
               onClick={toggleMode}
-              className="text-blue-400 hover:text-blue-300 text-sm"
+              className="text-[#47a528] hover:text-[#3d8b22] text-sm"
             >
               {isLogin 
                 ? 'Noch kein Konto? Registrieren' 

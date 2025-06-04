@@ -32,7 +32,7 @@ function AppContent() {
   // Show loading state while checking splash screen status
   if (loading || splashLoading) {
     return (
-      <div className="min-h-screen bg-[#1f1f1f] flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           <span className="text-white">Lädt...</span>
@@ -47,7 +47,7 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1f1f1f]">
+    <div className="min-h-screen bg-black">
       <Router>
         <Routes>
           <Route path="/" element={<Layout />}>

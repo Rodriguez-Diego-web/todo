@@ -51,10 +51,10 @@ export function Today() {
     return (
       <div className="p-4 md:p-8 w-full">
         <div className="animate-pulse">
-          <div className="h-8 bg-[#404040] rounded w-1/4 mb-6"></div>
+          <div className="h-8 bg-gray-800 rounded w-1/4 mb-6"></div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 bg-[#404040] rounded"></div>
+              <div key={i} className="h-20 bg-gray-800 rounded"></div>
             ))}
           </div>
         </div>
@@ -198,7 +198,7 @@ export function Today() {
 
           {/* Completed Tasks */}
           {completedTasks.length > 0 && (
-            <div className="pt-6 border-t border-[#404040]">
+            <div className="pt-6 border-t border-gray-800">
               <h2 className="text-lg font-semibold text-gray-300 mb-4">
                 Erledigt ({completedTasks.length}) ✅
               </h2>

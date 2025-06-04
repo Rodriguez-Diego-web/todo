@@ -163,7 +163,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                           e.stopPropagation();
                           handleShareList(list.id);
                         }}
-                        className="p-1.5 rounded-md hover:bg-[#505050] text-gray-400 hover:text-blue-400 transition-colors"
+                        className="p-1.5 rounded-md hover:bg-gray-800 text-gray-400 hover:text-[#47a528] transition-colors"
                         title="Liste teilen"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,7 +178,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                           setEditName(list.name);
                           setEditingId(list.id);
                         }}
-                        className="p-1.5 rounded-md hover:bg-[#505050] text-gray-400 hover:text-white transition-colors"
+                        className="p-1.5 rounded-md hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
                         title="Liste umbenennen"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,7 +192,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                           e.stopPropagation();
                           handleDeleteList(list.id);
                         }}
-                        className="p-1.5 rounded-md hover:bg-[#505050] text-gray-400 hover:text-red-400 transition-colors"
+                        className="p-1.5 rounded-md hover:bg-gray-800 text-gray-400 hover:text-red-400 transition-colors"
                         title="Liste löschen"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,14 +211,14 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
       {/* Share Modal */}
       {shareListId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[#2d2d2d] rounded-lg p-6 w-96 max-w-md mx-4">
+          <div className="bg-black rounded-lg p-6 w-96 max-w-md mx-4 border border-gray-800">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">
                 Liste teilen: {currentList?.name}
               </h3>
               <button 
                 onClick={() => setShareListId(null)}
-                className="p-1 hover:bg-[#404040] rounded"
+                className="p-1 hover:bg-gray-800 rounded"
               >
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -267,7 +267,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                 <button 
                   onClick={handleSendInvitation}
                   disabled={!inviteEmail.trim() || isInviting}
-                  className="flex-1 ms-button-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-[#47a528] hover:bg-[#3d8b22] text-white px-4 py-2.5 rounded-lg font-medium transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isInviting ? 'Sende...' : 'Einladung senden'}
                 </button>
@@ -276,7 +276,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
             
             {/* Shared with info */}
             {currentList?.sharedWith && currentList.sharedWith.length > 0 && (
-              <div className="mt-6 pt-4 border-t border-[#404040]">
+              <div className="mt-6 pt-4 border-t border-gray-800">
                 <h4 className="text-sm font-medium text-gray-300 mb-3">
                   Geteilt mit {currentList.sharedWith.length} Personen
                 </h4>
@@ -309,7 +309,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
         <button
           type="button"
           onClick={() => setIsCreating(true)}
-          className="w-full flex items-center px-4 py-3 mx-3 text-sm text-gray-400 hover:text-white hover:bg-[#404040] rounded-lg transition-all duration-200 mt-2"
+          className="w-full flex items-center px-4 py-3 mx-3 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-all duration-200 mt-2"
         >
           <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

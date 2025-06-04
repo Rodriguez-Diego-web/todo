@@ -92,10 +92,10 @@ export function ListPage() {
     return (
       <div className="p-4 md:p-8 w-full">
         <div className="animate-pulse">
-          <div className="h-8 bg-[#404040] rounded w-1/4 mb-6"></div>
+          <div className="h-8 bg-gray-800 rounded w-1/4 mb-6"></div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 bg-[#404040] rounded"></div>
+              <div key={i} className="h-20 bg-gray-800 rounded"></div>
             ))}
           </div>
         </div>
@@ -218,7 +218,7 @@ export function ListPage() {
 
           {/* Completed Tasks - No drag/drop needed */}
           {completedTasks.length > 0 && (
-            <div className="pt-6 border-t border-[#404040]">
+            <div className="pt-6 border-t border-gray-800">
               <h2 className="text-lg font-semibold text-gray-300 mb-4">
                 Erledigt ({completedTasks.length})
               </h2>
@@ -239,14 +239,14 @@ export function ListPage() {
       {/* Share Modal */}
       {showShareModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#2d2d2d] rounded-lg w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-[#404040]">
+          <div className="bg-black rounded-lg w-full max-w-md border border-gray-800">
+            <div className="flex items-center justify-between p-6 border-b border-gray-800">
               <h3 className="text-lg font-semibold text-white">
                 Liste teilen: {currentList?.name}
               </h3>
               <button 
                 onClick={() => setShowShareModal(false)}
-                className="p-1 hover:bg-[#404040] rounded"
+                className="p-1 hover:bg-gray-800 rounded"
               >
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -264,7 +264,7 @@ export function ListPage() {
                   placeholder="beispiel@email.com"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  className="w-full bg-[#1f1f1f] border border-[#404040] rounded-lg px-3 py-2 text-white"
+                  className="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-white focus:border-gray-600 focus:outline-none"
                 />
               </div>
               
@@ -275,7 +275,7 @@ export function ListPage() {
                 <select 
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as 'editor' | 'viewer')}
-                  className="w-full bg-[#1f1f1f] border border-[#404040] rounded-lg px-3 py-2 text-white"
+                  className="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-white focus:border-gray-600 focus:outline-none"
                 >
                   <option value="editor">Bearbeiten</option>
                   <option value="viewer">Nur anzeigen</option>
@@ -301,7 +301,7 @@ export function ListPage() {
               
               {/* Shared with info */}
               {currentList?.sharedWith && currentList.sharedWith.length > 0 && (
-                <div className="mt-6 pt-4 border-t border-[#404040]">
+                <div className="mt-6 pt-4 border-t border-gray-800">
                   <h4 className="text-sm font-medium text-gray-300 mb-3">
                     Geteilt mit {currentList.sharedWith.length} Personen
                   </h4>

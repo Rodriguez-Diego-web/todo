@@ -47,7 +47,7 @@ export function Layout() {
   const NotificationBell = () => (
     <button
       onClick={() => setInvitationsOpen(true)}
-      className="relative p-2 hover:bg-[#404040] rounded-lg transition-colors"
+      className="relative p-2 hover:bg-gray-800 rounded-lg transition-colors"
       title="Einladungen"
     >
       <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,12 +62,12 @@ export function Layout() {
   );
   
   return (
-    <div className="h-full bg-[#1f1f1f] flex flex-col md:flex-row">
+    <div className="h-full bg-black flex flex-col md:flex-row">
       {/* Mobile header */}
-      <header className="md:hidden bg-[#2d2d2d] border-b border-[#404040] px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] flex items-center justify-between sticky top-0 z-30 shadow-lg">
+      <header className="md:hidden bg-black border-b border-gray-800 px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] flex items-center justify-between sticky top-0 z-30 shadow-lg">
         <button 
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-lg hover:bg-[#404040] transition-colors"
+          className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
           aria-label="Toggle menu"
         >
           <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -79,7 +79,7 @@ export function Layout() {
           <NotificationBell />
           <button
             onClick={handleSignOut}
-            className="p-2 rounded-lg hover:bg-[#404040] transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
             title="Abmelden"
           >
             <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,7 +95,7 @@ export function Layout() {
           className="fixed inset-0 bg-black bg-opacity-50"
           onClick={() => setSidebarOpen(false)}
         ></div>
-        <div className="fixed inset-y-0 left-0 w-80 bg-[#2d2d2d] shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col pt-safe-top">
+        <div className="fixed inset-y-0 left-0 w-80 bg-black shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col pt-safe-top">
           {/* User Profile */}
           <div className="ms-user-profile">
             <div className="ms-user-avatar">
@@ -108,7 +108,7 @@ export function Layout() {
               <NotificationBell />
               <button
                 onClick={handleSignOut}
-                className="p-2 hover:bg-[#404040] rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
                 title="Abmelden"
               >
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,18 +137,15 @@ export function Layout() {
               </Link>
             ))}
             
-            <div className="border-t border-[#404040] mt-4 pt-4">
+            <div className="border-t border-gray-800 mt-4 pt-4">
               <ListSidebar onNavigate={() => setSidebarOpen(false)} />
             </div>
             
             {/* Settings/Actions */}
-            <div className="mt-auto pt-4 border-t border-[#404040]">
+            <div className="mt-auto pt-4 border-t border-gray-800">
               <button
-                onClick={() => {
-                  resetSplashScreens();
-                  setSidebarOpen(false);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-[#404040] rounded-lg transition-colors text-sm"
+                onClick={resetSplashScreens}
+                className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors text-sm"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -161,7 +158,7 @@ export function Layout() {
       </div>
       
       {/* Sidebar - Desktop */}
-      <div className="hidden md:flex md:w-80 bg-[#2d2d2d] border-r border-[#404040] flex-col shadow-lg">
+      <div className="hidden md:flex md:w-80 bg-black border-r border-gray-800 flex-col shadow-lg">
         {/* User Profile */}
         <div className="ms-user-profile">
           <div className="ms-user-avatar">
@@ -174,7 +171,7 @@ export function Layout() {
             <NotificationBell />
             <button
               onClick={handleSignOut}
-              className="p-2 hover:bg-[#404040] rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
               title="Abmelden"
             >
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,15 +199,15 @@ export function Layout() {
             </Link>
           ))}
           
-          <div className="border-t border-[#404040] mt-4 pt-4">
-            <ListSidebar />
+          <div className="border-t border-gray-800 mt-4 pt-4">
+            <ListSidebar onNavigate={() => setSidebarOpen(false)} />
           </div>
           
           {/* Settings/Actions */}
-          <div className="mt-auto pt-4 border-t border-[#404040]">
+          <div className="mt-auto pt-4 border-t border-gray-800">
             <button
               onClick={resetSplashScreens}
-              className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-[#404040] rounded-lg transition-colors text-sm"
+              className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors text-sm"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
