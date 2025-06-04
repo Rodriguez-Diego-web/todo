@@ -1,19 +1,16 @@
-const CACHE_NAME = 'taskly-v1';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'plan-panda-v1';
+const urlsToCache = [
   '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/icon.png',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/static/js/bundle.js',
+  '/static/css/main.css',
+  '/manifest.webmanifest'
 ];
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS_TO_CACHE))
-      .then(() => self.skipWaiting())
+      .then((cache) => cache.addAll(urlsToCache))
   );
 });
 
@@ -44,31 +41,12 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith(
     caches.match(event.request)
-      .then((cachedResponse) => {
-        // Return cached response if found
-        if (cachedResponse) {
-          return cachedResponse;
+      .then((response) => {
+        // Cache hit - return response
+        if (response) {
+          return response;
         }
-
-        // Otherwise, fetch from network
-        return fetch(event.request)
-          .then((response) => {
-            // Check if we received a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            // Clone the response
-            const responseToCache = response.clone();
-
-            // Cache the fetched response
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          });
+        return fetch(event.request);
       })
   );
 });

@@ -1,18 +1,19 @@
 {
-  "name": "Taskly - Todo PWA",
-  "short_name": "Taskly",
-  "description": "A modern task management app",
-  "start_url": "/",
-  "display": "standalone",
+  "name": "Plan Panda - Todo PWA",
+  "short_name": "Plan Panda",
+  "description": "Your Personal Task Management PWA with the Plan Panda",
   "theme_color": "#1f1f1f",
   "background_color": "#1f1f1f",
+  "display": "standalone",
   "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
