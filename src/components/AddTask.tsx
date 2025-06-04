@@ -53,7 +53,15 @@ export function AddTask({ onAdd }: AddTaskProps) {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Neue Aufgabe hinzufügen..."
               className="flex-1 text-white bg-transparent focus:outline-none placeholder-gray-400 text-base"
-              onFocus={() => setIsExpanded(true)}
+              onFocus={() => {
+                setIsExpanded(true);
+                // Scroll input into view on mobile to prevent gray screen
+                setTimeout(() => {
+                  if (window.innerWidth < 768) {
+                    window.scrollTo(0, 0);
+                  }
+                }, 300);
+              }}
               autoComplete="off"
             />
             

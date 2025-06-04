@@ -4,8 +4,9 @@
   "description": "A Microsoft To Do clone as Progressive Web App",
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#4F46E5",
-  "background_color": "#ffffff",
+  "theme_color": "#1f1f1f",
+  "background_color": "#1f1f1f",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/icon-192.png",

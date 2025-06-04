@@ -60,7 +60,7 @@ export function Layout() {
   );
   
   return (
-    <div className="min-h-screen bg-[#1f1f1f] flex flex-col md:flex-row">
+    <div className="h-full bg-[#1f1f1f] flex flex-col md:flex-row">
       {/* Mobile header */}
       <header className="md:hidden bg-[#2d2d2d] border-b border-[#404040] p-4 flex items-center justify-between sticky top-0 z-30 shadow-lg">
         <button 

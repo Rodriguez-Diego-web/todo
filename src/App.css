@@ -1,8 +1,39 @@
+/* PWA Layout Fixes */
+html {
+  height: 100%;
+  /* Prevent iOS rubber-band scrolling */
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  height: 100%;
+  overflow: hidden;
+  /* Prevent iOS bounce effect */
+  overscroll-behavior: none;
+}
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Fix for mobile keyboard issues in PWA */
+@supports (-webkit-touch-callout: none) {
+  /* iOS specific fixes */
+  .h-full {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Ensure proper scrolling on mobile */
+main {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Prevent pull-to-refresh on mobile */
+  overscroll-behavior-y: contain;
 }
 
 .logo {
