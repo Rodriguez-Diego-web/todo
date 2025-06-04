@@ -124,29 +124,31 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
       {...attributes}
       {...listeners}
     >
-      <div className={`flex items-center py-3 px-4 border-b border-[#404040] transition-all duration-200 hover:bg-[#2d2d2d] ${isDragging ? 'bg-[#2d2d2d] scale-105' : ''}`}>
+      <div className={`flex items-center py-3 px-4 border-b border-[#404040] transition-colors duration-200 ${isDragging ? 'bg-[#2d2d2d]' : ''}`}>
         
-        {/* Checkbox */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(task.id);
-          }}
-          className={`flex-shrink-0 w-5 h-5 rounded-full border-2 mr-4 relative transition-all duration-200 ${
-            task.completed 
-              ? 'bg-blue-600 border-blue-600' 
-              : 'border-gray-400 hover:border-blue-400'
-          }`}
-        >
-          {task.completed && (
-            <svg className="w-3 h-3 text-white absolute inset-0 m-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
-          )}
-        </button>
+        {/* Checkbox with larger touch area */}
+        <div className="flex-shrink-0 -ml-2 -my-2 p-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(task.id);
+            }}
+            className={`block w-5 h-5 rounded-full border-2 relative transition-all duration-200 ${
+              task.completed 
+                ? 'bg-blue-600 border-blue-600' 
+                : 'border-gray-400 hover:border-blue-400'
+            }`}
+          >
+            {task.completed && (
+              <svg className="w-3 h-3 text-white absolute inset-0 m-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </button>
+        </div>
         
-        {/* Task Title */}
-        <div className="flex-1 min-w-0">
+        {/* Task Title - not clickable */}
+        <div className="flex-1 min-w-0 ml-2">
           <h3 className={`text-white ${task.completed ? 'line-through opacity-60' : ''}`}>
             {task.title}
           </h3>
@@ -163,13 +165,13 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
           )}
         </div>
         
-        {/* Star Icon (Favorite) */}
+        {/* Star Icon (Favorite) - Hidden on mobile, visible on desktop */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             // TODO: Add favorite functionality
           }}
-          className="flex-shrink-0 ml-4 p-2 hover:bg-[#404040] rounded-md transition-colors opacity-0 group-hover:opacity-100"
+          className="flex-shrink-0 ml-4 p-2 rounded-md transition-colors hidden md:block hover:bg-[#404040]"
           title="Zu Favoriten hinzufügen"
         >
           <svg className="w-5 h-5 text-gray-400 hover:text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,14 +179,32 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
           </svg>
         </button>
 
-        {/* Edit/Delete Buttons (Hidden, only on double-tap/long-press) */}
-        <div className="hidden group-hover:flex items-center gap-1 ml-2">
+        {/* Mobile Actions - Long press or 3-dot menu */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            // Show action menu
+            const shouldEdit = window.confirm('Aufgabe bearbeiten?');
+            if (shouldEdit) {
+              setIsEditing(true);
+            }
+          }}
+          className="flex-shrink-0 ml-2 p-2 rounded-md transition-colors md:hidden"
+          title="Aktionen"
+        >
+          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+          </svg>
+        </button>
+
+        {/* Desktop Edit/Delete Buttons */}
+        <div className="hidden md:flex items-center gap-1 ml-2">
           <button
             onClick={(e) => {
               e.stopPropagation();
               setIsEditing(true);
             }}
-            className="p-1 hover:bg-[#404040] rounded-md transition-colors"
+            className="p-1 hover:bg-[#404040] rounded-md transition-colors opacity-0 group-hover:opacity-100"
             title="Bearbeiten"
           >
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,7 +216,7 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
               e.stopPropagation();
               onDelete(task.id);
             }}
-            className="p-1 hover:bg-red-900/30 rounded-md transition-colors text-red-400"
+            className="p-1 hover:bg-red-900/30 rounded-md transition-colors text-red-400 opacity-0 group-hover:opacity-100"
             title="Löschen"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -227,8 +247,8 @@ export function DragDropTaskList({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 10, // Increased distance for better mobile experience
-        delay: 100, // Small delay to distinguish from taps
+        distance: 15, // Increased from 10 to prevent accidental drags
+        delay: 250, // Increased delay to allow quick taps on checkbox
         tolerance: 5,
       },
     }),
