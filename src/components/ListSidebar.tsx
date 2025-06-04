@@ -115,7 +115,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                   className="ms-input text-sm py-2"
                 />
               </form>
-            ) :
+            ) : (
               <Link
                 to={`/list/${list.id}`}
                 onClick={onNavigate}
