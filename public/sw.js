@@ -1,11 +1,8 @@
-
 const CACHE_NAME = 'tasky-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/icon-192.png',
-  '/icon-512.png',
   '/vite.svg'
 ];
 

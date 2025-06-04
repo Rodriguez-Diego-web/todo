@@ -29,7 +29,10 @@ export function ListPage() {
   }, [currentList, lists, loading, navigate]);
 
   // Helper function to convert Timestamp to Date
-  const toDate = (timestamp: string | Timestamp): Date => {
+  const toDate = (timestamp: string | Timestamp | null | undefined): Date => {
+    if (!timestamp) {
+      return new Date(); // Return current date as fallback
+    }
     if (typeof timestamp === 'string') {
       return new Date(timestamp);
     }
