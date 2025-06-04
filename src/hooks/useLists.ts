@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import type { List } from '../types';
 import { firestoreService } from '../services/firestoreService';
 import { useAuth } from '../contexts/AuthContext';
-import { v4 as uuidv4 } from 'uuid';
 
 export function useLists() {
   const [lists, setLists] = useState<List[]>([]);
