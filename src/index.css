@@ -8,13 +8,8 @@
   body {
     @apply bg-black text-white font-['Segoe_UI',_sans-serif];
     font-feature-settings: 'liga' 1;
-    /* Prevent iOS magnifying glass */
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -webkit-tap-highlight-color: transparent;
     /* Prevent pull-to-refresh */
     overscroll-behavior-y: none;
-    touch-action: manipulation;
   }
   
   /* Custom scrollbar styling for dark mode */
@@ -23,12 +18,9 @@
     scrollbar-color: #374151 transparent;
   }
   
-  /* Prevent magnifying glass on all interactive elements */
-  button, a, input, textarea, .ms-task-item, .ms-checkbox, .ms-sidebar-item, [role="button"] {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
+  /* Minimaler Ansatz zur Unterdrückung der Lupe */
+  input, textarea, button, a {
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
   }
   
   *::-webkit-scrollbar {

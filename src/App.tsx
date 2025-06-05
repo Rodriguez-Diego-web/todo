@@ -22,20 +22,24 @@ function AppContent() {
     }
   }, [currentUser, loading]);
 
-  // Prevent iOS magnifying glass
+  // Verhindern der Lupe auf bestimmten Elementen
   useEffect(() => {
-    const preventMagnifyingGlass = (e: TouchEvent) => {
-      // This helps prevent the magnifying glass on iOS
-      if (e.touches.length > 1) {
+    // Füge einen sehr einfachen Handler hinzu, der nur auf bestimmten Elementen wirkt
+    const preventMagnifyingGlass = (e: Event) => {
+      const target = e.target as HTMLElement;
+      
+      // Verhindere die Lupe nur bei Checkboxen, nicht beim Drag&Drop
+      if (target.classList.contains('ms-checkbox') || 
+          target.closest('.ms-checkbox')) {
         e.preventDefault();
       }
     };
 
-    // Add the event listener to the document
-    document.addEventListener('touchstart', preventMagnifyingGlass, { passive: false });
+    // Nutze das dblclick-Event statt touchstart, um die Lupe zu verhindern
+    document.addEventListener('contextmenu', preventMagnifyingGlass, { passive: false });
 
     return () => {
-      document.removeEventListener('touchstart', preventMagnifyingGlass);
+      document.removeEventListener('contextmenu', preventMagnifyingGlass);
     };
   }, []);
 
