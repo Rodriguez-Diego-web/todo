@@ -8,12 +8,27 @@
   body {
     @apply bg-black text-white font-['Segoe_UI',_sans-serif];
     font-feature-settings: 'liga' 1;
+    /* Prevent iOS magnifying glass */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    /* Prevent pull-to-refresh */
+    overscroll-behavior-y: none;
+    touch-action: manipulation;
   }
   
   /* Custom scrollbar styling for dark mode */
   * {
     scrollbar-width: thin;
     scrollbar-color: #374151 transparent;
+  }
+  
+  /* Prevent magnifying glass on all interactive elements */
+  button, a, input, textarea, .ms-task-item, .ms-checkbox, .ms-sidebar-item, [role="button"] {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   
   *::-webkit-scrollbar {
@@ -110,24 +125,4 @@
   .ms-list-icon {
     @apply w-5 h-5 mr-3 text-gray-400;
   }
-}
-
-/* Prevent iOS magnifying glass */
-* {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Allow selection in input fields */
-input, textarea {
-  -webkit-user-select: auto;
-  -khtml-user-select: auto;
-  -moz-user-select: auto;
-  -ms-user-select: auto;
-  user-select: auto;
 }

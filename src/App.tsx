@@ -22,6 +22,23 @@ function AppContent() {
     }
   }, [currentUser, loading]);
 
+  // Prevent iOS magnifying glass
+  useEffect(() => {
+    const preventMagnifyingGlass = (e: TouchEvent) => {
+      // This helps prevent the magnifying glass on iOS
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
+
+    // Add the event listener to the document
+    document.addEventListener('touchstart', preventMagnifyingGlass, { passive: false });
+
+    return () => {
+      document.removeEventListener('touchstart', preventMagnifyingGlass);
+    };
+  }, []);
+
   // Show splash screens for new users
   if (!loading && currentUser && showSplashScreens) {
     return <SplashScreens onComplete={completeSplashScreens} />;

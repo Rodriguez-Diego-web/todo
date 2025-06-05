@@ -185,14 +185,14 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete, listColor = '#4b
         
         {/* Mobile and Desktop Actions */}
         <div className="flex items-center gap-1 ml-2">
-          {/* Edit Button - Desktop only */}
+          {/* Edit Button - Always visible */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               setIsEditing(true);
             }}
-            className={`p-2 hover:bg-[#404040] rounded-md transition-colors opacity-0 group-hover:opacity-100 hidden md:block ${
-              task.completed ? 'opacity-0 hover:opacity-0' : ''
+            className={`p-2 hover:bg-[#404040] rounded-md transition-colors ${
+              task.completed ? 'opacity-60' : ''
             }`}
             title="Bearbeiten"
           >
