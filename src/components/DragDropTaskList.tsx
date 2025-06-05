@@ -39,6 +39,7 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
   const [isLongPressing, setIsLongPressing] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwipeDeleteMode, setIsSwipeDeleteMode] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
 
   const {
     attributes,
@@ -65,7 +66,7 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (isDragging) return;
+    if (isDragging || isEditing) return;
     
     const touch = e.touches[0];
     setTouchStart({
@@ -74,43 +75,78 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
       time: Date.now()
     });
     
-    // Start long press timer
-    setTimeout(() => {
-      if (touchStart && Date.now() - touchStart.time >= 500) {
+    // Clear any existing timer
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+    }
+    
+    // Start long press timer with visual feedback
+    const timer = setTimeout(() => {
+      if (touchStart) {
         setIsLongPressing(true);
         setIsSwipeDeleteMode(true);
+        
         // Haptic feedback if available
         if ('vibrate' in navigator) {
-          navigator.vibrate(50);
+          navigator.vibrate([50, 30, 50]); // Double vibration pattern
         }
+        
+        // Prevent text selection
+        e.preventDefault();
       }
-    }, 500);
+    }, 600); // Slightly longer delay to be more intentional
+    
+    setLongPressTimer(timer);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!touchStart || !isLongPressing) return;
+    if (!touchStart) return;
     
     const touch = e.touches[0];
     const deltaX = touch.clientX - touchStart.x;
     const deltaY = Math.abs(touch.clientY - touchStart.y);
     
-    // Only allow horizontal swipe (prevent vertical scrolling interference)
-    if (deltaY > 30) {
+    // If moving too much vertically, cancel long press
+    if (deltaY > 25) {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        setLongPressTimer(null);
+      }
       setIsLongPressing(false);
       setIsSwipeDeleteMode(false);
       setSwipeOffset(0);
       return;
     }
     
-    // Only track right swipe (positive deltaX)
-    if (deltaX > 0 && deltaX < 150) {
-      setSwipeOffset(deltaX);
-      e.preventDefault();
+    // If in delete mode and swiping horizontally
+    if (isLongPressing && isSwipeDeleteMode) {
+      // Only track right swipe (positive deltaX)
+      if (deltaX > 0 && deltaX < 200) {
+        setSwipeOffset(deltaX);
+        e.preventDefault();
+        
+        // Additional haptic feedback at 50% threshold
+        if (deltaX > 80 && deltaX < 85 && 'vibrate' in navigator) {
+          navigator.vibrate(25);
+        }
+      }
+    } else if (Math.abs(deltaX) > 10 || deltaY > 10) {
+      // If user starts moving before long press completes, cancel it
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        setLongPressTimer(null);
+      }
     }
   };
 
   const handleTouchEnd = async () => {
-    if (!touchStart || !isLongPressing) {
+    // Clear timer if still running
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+    
+    if (!touchStart || !isLongPressing || !isSwipeDeleteMode) {
       setTouchStart(null);
       setIsLongPressing(false);
       setSwipeOffset(0);
@@ -118,8 +154,8 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
       return;
     }
     
-    // If swiped far enough (more than 100px), trigger delete
-    if (swipeOffset > 100) {
+    // If swiped far enough (more than 120px), trigger delete
+    if (swipeOffset > 120) {
       if (hasBeenWarned()) {
         // Delete immediately without confirmation
         onDelete(task.id);
@@ -134,6 +170,18 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
     }
     
     // Reset states
+    setTouchStart(null);
+    setIsLongPressing(false);
+    setSwipeOffset(0);
+    setIsSwipeDeleteMode(false);
+  };
+
+  // Cancel long press on touch cancel
+  const handleTouchCancel = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
     setTouchStart(null);
     setIsLongPressing(false);
     setSwipeOffset(0);
@@ -210,29 +258,50 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className="w-full group touch-manipulation relative overflow-hidden"
+      style={{
+        ...style,
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+        touchAction: 'manipulation'
+      }}
+      className="w-full group touch-manipulation relative overflow-hidden select-none"
       {...(isSwipeDeleteMode ? {} : { ...attributes, ...listeners })}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
     >
       {/* Delete indicator background */}
       {isSwipeDeleteMode && (
         <div 
           className="absolute inset-0 bg-red-600 flex items-center justify-end pr-4 z-0"
-          style={{ opacity: Math.min(swipeOffset / 100, 1) }}
+          style={{ opacity: Math.min(swipeOffset / 120, 1) }}
         >
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
+          <div className="flex items-center gap-2 text-white">
+            <span className="text-sm font-medium">
+              {swipeOffset > 120 ? 'Loslassen zum Löschen' : 'Weiter wischen →'}
+            </span>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+        </div>
+      )}
+
+      {/* Long press indicator */}
+      {touchStart && !isSwipeDeleteMode && (
+        <div className="absolute inset-0 bg-yellow-600/20 flex items-center justify-center z-10">
+          <div className="text-yellow-500 text-sm font-medium animate-pulse">
+            Halten zum Löschen aktivieren...
+          </div>
         </div>
       )}
 
       <div 
         className={`flex items-center py-3 px-4 border-b border-[#404040] transition-all duration-200 relative z-10 ${
           isDragging ? 'bg-[#2d2d2d]' : ''
-        } ${isSwipeDeleteMode ? 'bg-[#1f1f1f]' : ''}`}
+        } ${isSwipeDeleteMode ? 'bg-[#1f1f1f] shadow-lg' : ''} ${touchStart && !isSwipeDeleteMode ? 'bg-yellow-900/10' : ''}`}
         style={{
           transform: isSwipeDeleteMode ? `translateX(${swipeOffset}px)` : undefined,
           transition: isSwipeDeleteMode ? 'none' : undefined
@@ -278,12 +347,22 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
           )}
         </div>
         
-        {/* Long press hint for mobile */}
-        {!isSwipeDeleteMode && (
+        {/* Mobile hint - only show when not in any special mode */}
+        {!isSwipeDeleteMode && !touchStart && (
           <div className="flex-shrink-0 ml-2 md:hidden">
-            <div className="text-xs text-gray-500 text-center">
+            <div className="text-xs text-gray-500 text-center opacity-70">
               <div>Lang drücken</div>
-              <div>& wischen →</div>
+              <div>zum Löschen</div>
+            </div>
+          </div>
+        )}
+        
+        {/* Delete mode instruction */}
+        {isSwipeDeleteMode && (
+          <div className="flex-shrink-0 ml-2 md:hidden">
+            <div className="text-xs text-red-400 text-center font-medium animate-pulse">
+              <div>Nach rechts</div>
+              <div>wischen →</div>
             </div>
           </div>
         )}
