@@ -33,6 +33,12 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
   const [editNotes, setEditNotes] = useState(task.notes || '');
   const [editDueDate, setEditDueDate] = useState(task.dueDate || '');
   const [editPriority, setEditPriority] = useState(task.priority);
+  
+  // Swipe-to-delete states
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
+  const [isLongPressing, setIsLongPressing] = useState(false);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwipeDeleteMode, setIsSwipeDeleteMode] = useState(false);
 
   const {
     attributes,
@@ -47,6 +53,91 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.8 : 1,
+  };
+
+  // Check if user has been warned about swipe delete before
+  const hasBeenWarned = () => {
+    return localStorage.getItem('swipe-delete-warned') === 'true';
+  };
+
+  const setWarned = () => {
+    localStorage.setItem('swipe-delete-warned', 'true');
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (isDragging) return;
+    
+    const touch = e.touches[0];
+    setTouchStart({
+      x: touch.clientX,
+      y: touch.clientY,
+      time: Date.now()
+    });
+    
+    // Start long press timer
+    setTimeout(() => {
+      if (touchStart && Date.now() - touchStart.time >= 500) {
+        setIsLongPressing(true);
+        setIsSwipeDeleteMode(true);
+        // Haptic feedback if available
+        if ('vibrate' in navigator) {
+          navigator.vibrate(50);
+        }
+      }
+    }, 500);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart || !isLongPressing) return;
+    
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchStart.x;
+    const deltaY = Math.abs(touch.clientY - touchStart.y);
+    
+    // Only allow horizontal swipe (prevent vertical scrolling interference)
+    if (deltaY > 30) {
+      setIsLongPressing(false);
+      setIsSwipeDeleteMode(false);
+      setSwipeOffset(0);
+      return;
+    }
+    
+    // Only track right swipe (positive deltaX)
+    if (deltaX > 0 && deltaX < 150) {
+      setSwipeOffset(deltaX);
+      e.preventDefault();
+    }
+  };
+
+  const handleTouchEnd = async () => {
+    if (!touchStart || !isLongPressing) {
+      setTouchStart(null);
+      setIsLongPressing(false);
+      setSwipeOffset(0);
+      setIsSwipeDeleteMode(false);
+      return;
+    }
+    
+    // If swiped far enough (more than 100px), trigger delete
+    if (swipeOffset > 100) {
+      if (hasBeenWarned()) {
+        // Delete immediately without confirmation
+        onDelete(task.id);
+      } else {
+        // Ask for confirmation first time
+        const confirmed = window.confirm('Möchten Sie diese Aufgabe wirklich löschen? (Diese Frage wird nur einmal gestellt)');
+        if (confirmed) {
+          setWarned();
+          onDelete(task.id);
+        }
+      }
+    }
+    
+    // Reset states
+    setTouchStart(null);
+    setIsLongPressing(false);
+    setSwipeOffset(0);
+    setIsSwipeDeleteMode(false);
   };
 
   const handleSave = () => {
@@ -120,11 +211,33 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
     <div
       ref={setNodeRef}
       style={style}
-      className="w-full group touch-manipulation"
-      {...attributes}
-      {...listeners}
+      className="w-full group touch-manipulation relative overflow-hidden"
+      {...(isSwipeDeleteMode ? {} : { ...attributes, ...listeners })}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
-      <div className={`flex items-center py-3 px-4 border-b border-[#404040] transition-colors duration-200 ${isDragging ? 'bg-[#2d2d2d]' : ''}`}>
+      {/* Delete indicator background */}
+      {isSwipeDeleteMode && (
+        <div 
+          className="absolute inset-0 bg-red-600 flex items-center justify-end pr-4 z-0"
+          style={{ opacity: Math.min(swipeOffset / 100, 1) }}
+        >
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </div>
+      )}
+
+      <div 
+        className={`flex items-center py-3 px-4 border-b border-[#404040] transition-all duration-200 relative z-10 ${
+          isDragging ? 'bg-[#2d2d2d]' : ''
+        } ${isSwipeDeleteMode ? 'bg-[#1f1f1f]' : ''}`}
+        style={{
+          transform: isSwipeDeleteMode ? `translateX(${swipeOffset}px)` : undefined,
+          transition: isSwipeDeleteMode ? 'none' : undefined
+        }}
+      >
         
         {/* Checkbox with larger touch area */}
         <div className="flex-shrink-0 -ml-2 -my-2 p-2">
@@ -165,6 +278,16 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
           )}
         </div>
         
+        {/* Long press hint for mobile */}
+        {!isSwipeDeleteMode && (
+          <div className="flex-shrink-0 ml-2 md:hidden">
+            <div className="text-xs text-gray-500 text-center">
+              <div>Lang drücken</div>
+              <div>& wischen →</div>
+            </div>
+          </div>
+        )}
+        
         {/* Star Icon (Favorite) - Hidden on mobile, visible on desktop */}
         <button
           onClick={(e) => {
@@ -176,24 +299,6 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
         >
           <svg className="w-5 h-5 text-gray-400 hover:text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-          </svg>
-        </button>
-
-        {/* Mobile Actions - Long press or 3-dot menu */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            // Show action menu
-            const shouldEdit = window.confirm('Aufgabe bearbeiten?');
-            if (shouldEdit) {
-              setIsEditing(true);
-            }
-          }}
-          className="flex-shrink-0 ml-2 p-2 rounded-md transition-colors md:hidden"
-          title="Aktionen"
-        >
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
           </svg>
         </button>
 

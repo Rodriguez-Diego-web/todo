@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useTasks } from '../hooks/useTasks';
 import { useLists } from '../hooks/useLists';
 import type { Task } from '../types';
@@ -14,12 +14,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const location = useLocation();
   const { listId } = useParams();
   const { lists } = useLists();
-  const navigate = useNavigate();
   
   // Determine which tasks to search based on current page
   const isToday = location.pathname === '/';
   const currentListId = isToday ? 'today' : listId;
-  const { tasks } = useTasks(currentListId);
+  const { tasks, toggleComplete } = useTasks(currentListId);
   
   const currentList = useMemo(() => {
     if (isToday) {
@@ -63,14 +62,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleGoToTask = (task: Task) => {
-    // Navigate to the appropriate list
-    if (task.listId === 'today') {
-      navigate('/');
-    } else {
-      navigate(`/list/${task.listId}`);
-    }
-    onClose();
+  const handleToggleComplete = async (task: Task) => {
+    await toggleComplete(task.id);
   };
 
   if (!isOpen) return null;
@@ -135,66 +128,53 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </p>
             </div>
           ) : (
-            <div className="p-4 space-y-2">
+            <div className="p-4 space-y-3">
               <div className="text-sm text-gray-400 px-2 mb-3">
                 {filteredTasks.length} Ergebnis{filteredTasks.length !== 1 ? 'se' : ''} gefunden
               </div>
               {filteredTasks.map((task) => (
                 <div
                   key={task.id}
-                  className={`p-4 rounded-lg border transition-colors hover:bg-gray-800 ${
-                    task.completed
-                      ? 'bg-gray-900/50 border-gray-800 opacity-60'
-                      : 'bg-gray-900 border-gray-700'
+                  className={`py-3 px-4 border-b border-[#404040] transition-colors hover:bg-[#2d2d2d] ${
+                    task.completed ? 'opacity-60' : ''
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       {getPriorityIcon(task.priority)}
-                      <div
-                        className={`w-5 h-5 rounded-full border-2 transition-all duration-200 cursor-pointer ${
+                      <button
+                        onClick={() => handleToggleComplete(task)}
+                        className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
                           task.completed
-                            ? 'bg-[#0078d4] border-[#0078d4]'
-                            : 'border-gray-500 hover:border-[#0078d4]'
+                            ? 'bg-blue-600 border-blue-600'
+                            : 'border-gray-400 hover:border-blue-400'
                         }`}
                       >
                         {task.completed && (
-                          <svg className="w-3 h-3 text-white m-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <svg className="w-3 h-3 text-white absolute inset-0 m-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
-                      </div>
+                      </button>
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h3 className={`font-medium ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>
+                      <h3 className={`text-white ${task.completed ? 'line-through opacity-60' : ''}`}>
                         {task.title}
                       </h3>
                       {task.notes && (
-                        <p className={`text-sm mt-1 ${task.completed ? 'line-through text-gray-600' : 'text-gray-400'}`}>
+                        <p className={`text-sm text-gray-400 mt-1 ${task.completed ? 'line-through opacity-60' : ''}`}>
                           {task.notes}
                         </p>
                       )}
                       {task.dueDate && (
-                        <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          {new Date(task.dueDate).toLocaleDateString('de-DE')}
-                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(task.dueDate).toLocaleDateString('de-DE', {
+                            day: 'numeric',
+                            month: 'short'
+                          })}
+                        </p>
                       )}
-                    </div>
-                    
-                    <div className="flex items-center">
-                      <button
-                        onClick={() => handleGoToTask(task)}
-                        className="px-3 py-1.5 text-xs bg-[#47a528] hover:bg-[#3d8b22] text-white rounded-md transition-colors"
-                        title="Zur Aufgabe"
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -206,7 +186,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         {/* Footer */}
         <div className="p-4 border-t border-gray-800 text-center">
           <p className="text-xs text-gray-500">
-            Durchsucht wird nur "{currentList?.name}" • ESC zum Schließen • ⌘K / Ctrl+K zum Öffnen
+            Klicken Sie auf die Checkbox um Aufgaben zu erledigen • ESC zum Schließen • ⌘K / Ctrl+K zum Öffnen
           </p>
         </div>
       </div>
