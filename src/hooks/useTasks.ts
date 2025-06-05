@@ -56,15 +56,15 @@ export function useTasks(listId?: string) {
     if (!currentUser) throw new Error('Not authenticated');
     
     try {
-      // Find the minimum order value to place new task at the top
-      const minOrderTask = tasks.length > 0 
-        ? tasks.reduce((min, t) => (t.order !== undefined && (min.order === undefined || t.order < min.order)) ? t : min, tasks[0])
+      // Finde den höchsten order-Wert, um neue Aufgabe am Ende hinzuzufügen
+      const maxOrderTask = tasks.length > 0 
+        ? tasks.reduce((max, t) => (t.order !== undefined && (max.order === undefined || t.order > max.order)) ? t : max, tasks[0])
         : null;
       
-      // Set order to be one less than the current minimum order
-      const newOrder = minOrderTask?.order !== undefined 
-        ? minOrderTask.order - 1 
-        : -1000; // Start with a very negative number if no tasks exist
+      // Setze order auf den höchsten Wert + 1
+      const newOrder = maxOrderTask?.order !== undefined 
+        ? maxOrderTask.order + 1 
+        : 0; // Starte bei 0, wenn keine Aufgaben existieren
       
       const newTaskData: Omit<Task, 'id' | 'updatedAt'> = {
         title: taskData.title,
@@ -75,7 +75,7 @@ export function useTasks(listId?: string) {
         listId: taskData.listId || 'default',
         createdBy: currentUser.uid,
         assignedTo: currentUser.uid,
-        order: newOrder, // Set negative order to ensure it appears at the top
+        order: newOrder, // Setze order auf höchsten Wert + 1, damit neue Aufgabe am Ende erscheint
       };
       
       const taskId = await firestoreService.createTask(newTaskData);
