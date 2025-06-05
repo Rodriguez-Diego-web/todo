@@ -121,6 +121,7 @@ export class FirestoreService {
     const q = query(
       collection(db, 'tasks'),
       where('listId', '==', listId),
+      orderBy('order', 'asc'),
       orderBy('updatedAt', 'desc')
     );
     
@@ -180,6 +181,7 @@ export class FirestoreService {
     const q = query(
       collection(db, 'tasks'),
       where('listId', '==', listId),
+      orderBy('order', 'asc'),
       orderBy('updatedAt', 'desc')
     );
     

@@ -48,14 +48,24 @@ export function useTasks(listId?: string) {
 
   const createTask = async (taskData: {
     title: string;
-      notes?: string;
-      dueDate?: string;
-      priority?: 0 | 1 | 2;
+    notes?: string;
+    dueDate?: string;
+    priority?: 0 | 1 | 2;
     listId?: string;
   }) => {
     if (!currentUser) throw new Error('Not authenticated');
     
     try {
+      // Find the minimum order value to place new task at the top
+      const minOrderTask = tasks.length > 0 
+        ? tasks.reduce((min, t) => (t.order !== undefined && (min.order === undefined || t.order < min.order)) ? t : min, tasks[0])
+        : null;
+      
+      // Set order to be one less than the current minimum order
+      const newOrder = minOrderTask?.order !== undefined 
+        ? minOrderTask.order - 1 
+        : -1000; // Start with a very negative number if no tasks exist
+      
       const newTaskData: Omit<Task, 'id' | 'updatedAt'> = {
         title: taskData.title,
         notes: taskData.notes,
@@ -65,6 +75,7 @@ export function useTasks(listId?: string) {
         listId: taskData.listId || 'default',
         createdBy: currentUser.uid,
         assignedTo: currentUser.uid,
+        order: newOrder, // Set negative order to ensure it appears at the top
       };
       
       const taskId = await firestoreService.createTask(newTaskData);
