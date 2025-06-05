@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { ListSidebar } from './ListSidebar';
 import { useAuth } from '../contexts/AuthContext';
 import { InvitationsModal } from './InvitationsModal';
@@ -9,7 +9,6 @@ import { useSplashScreens } from '../hooks/useSplashScreens';
 import React from 'react';
 
 export function Layout() {
-  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [invitationsOpen, setInvitationsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -17,11 +16,6 @@ export function Layout() {
   const { invitations } = useInvitations();
   const { resetSplashScreens } = useSplashScreens();
   
-  const defaultCategories = [
-    { id: 'today', name: 'Mein Tag', icon: 'sun', path: '/', count: 0 },
-    { id: 'important', name: 'Wichtig', icon: 'star', path: '/important', count: 0 },
-  ];
-
   // Keyboard shortcut for search (Cmd/Ctrl + K)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -45,20 +39,10 @@ export function Layout() {
     }
   };
 
-  const getIcon = (iconName: string) => {
-    const icons: Record<string, React.JSX.Element> = {
-      sun: (
-        <svg className="ms-list-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ),
-      star: (
-        <svg className="ms-list-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-        </svg>
-      ),
-    };
-    return icons[iconName] || icons.sun;
+  const handleShowOnboarding = () => {
+    resetSplashScreens();
+    // Reload the page to show onboarding again
+    window.location.reload();
   };
 
   const NotificationBell = () => (
@@ -149,33 +133,18 @@ export function Layout() {
             </div>
           </div>
           
-          {/* Categories */}
+          {/* Lists */}
           <nav className="flex-1 overflow-y-auto py-2">
-            {defaultCategories.map((category) => (
-              <Link
-                key={category.id}
-                to={category.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`ms-sidebar-category ${location.pathname === category.path ? 'active' : ''}`}
-              >
-                <div className="flex items-center flex-1">
-                  {getIcon(category.icon)}
-                  <span>{category.name}</span>
-                </div>
-                {category.count > 0 && (
-                  <span className="ms-count-badge">{category.count}</span>
-                )}
-              </Link>
-            ))}
-            
-            <div className="border-t border-gray-800 mt-4 pt-4">
-              <ListSidebar onNavigate={() => setSidebarOpen(false)} />
+            <div className="px-4 py-2">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Meine Listen</h2>
             </div>
+            
+            <ListSidebar onNavigate={() => setSidebarOpen(false)} />
             
             {/* Settings/Actions */}
             <div className="mt-auto pt-4 border-t border-gray-800">
               <button
-                onClick={resetSplashScreens}
+                onClick={handleShowOnboarding}
                 className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors text-sm"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -213,32 +182,18 @@ export function Layout() {
           </div>
         </div>
         
-        {/* Categories */}
+        {/* Lists */}
         <nav className="flex-1 overflow-y-auto py-2">
-          {defaultCategories.map((category) => (
-            <Link
-              key={category.id}
-              to={category.path}
-              className={`ms-sidebar-category ${location.pathname === category.path ? 'active' : ''}`}
-            >
-              <div className="flex items-center flex-1">
-                {getIcon(category.icon)}
-                <span>{category.name}</span>
-              </div>
-              {category.count > 0 && (
-                <span className="ms-count-badge">{category.count}</span>
-              )}
-            </Link>
-          ))}
-          
-          <div className="border-t border-gray-800 mt-4 pt-4">
-            <ListSidebar onNavigate={() => setSidebarOpen(false)} />
+          <div className="px-4 py-2">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Meine Listen</h2>
           </div>
+          
+          <ListSidebar onNavigate={() => setSidebarOpen(false)} />
           
           {/* Settings/Actions */}
           <div className="mt-auto pt-4 border-t border-gray-800">
             <button
-              onClick={resetSplashScreens}
+              onClick={handleShowOnboarding}
               className="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors text-sm"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
