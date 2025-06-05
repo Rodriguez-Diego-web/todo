@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useTasks } from '../hooks/useTasks';
 import { useLists } from '../hooks/useLists';
+import type { Task } from '../types';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const location = useLocation();
   const { listId } = useParams();
   const { lists } = useLists();
+  const navigate = useNavigate();
   
   // Determine which tasks to search based on current page
   const isToday = location.pathname === '/';
@@ -60,6 +62,16 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, onClose]);
+
+  const handleGoToTask = (task: Task) => {
+    // Navigate to the appropriate list
+    if (task.listId === 'today') {
+      navigate('/');
+    } else {
+      navigate(`/list/${task.listId}`);
+    }
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -130,12 +142,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               {filteredTasks.map((task) => (
                 <div
                   key={task.id}
-                  className={`p-4 rounded-lg border transition-colors cursor-pointer hover:bg-gray-800 ${
+                  className={`p-4 rounded-lg border transition-colors hover:bg-gray-800 ${
                     task.completed
                       ? 'bg-gray-900/50 border-gray-800 opacity-60'
                       : 'bg-gray-900 border-gray-700'
                   }`}
-                  onClick={onClose}
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex items-center gap-2 mt-1">
@@ -172,6 +183,18 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           {new Date(task.dueDate).toLocaleDateString('de-DE')}
                         </div>
                       )}
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => handleGoToTask(task)}
+                        className="px-3 py-1.5 text-xs bg-[#47a528] hover:bg-[#3d8b22] text-white rounded-md transition-colors"
+                        title="Zur Aufgabe"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 </div>
