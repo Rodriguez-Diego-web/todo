@@ -121,7 +121,7 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete, listColor = '#4b
     <div
       ref={setNodeRef}
       style={style}
-      className="w-full group touch-manipulation"
+      className="w-full group touch-manipulation sortable-item"
       data-draggable="true"
       {...attributes}
       {...listeners}
@@ -243,9 +243,9 @@ export function DragDropTaskList({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
-        delay: 100,
-        tolerance: 0,
+        distance: 5,
+        delay: 150,
+        tolerance: 3,
       },
     }),
     useSensor(KeyboardSensor, {
