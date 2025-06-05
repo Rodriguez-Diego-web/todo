@@ -6,7 +6,6 @@ import { InvitationsModal } from './InvitationsModal';
 import { SearchModal } from './SearchModal';
 import { useInvitations } from '../hooks/useInvitations';
 import { useSplashScreens } from '../hooks/useSplashScreens';
-import React from 'react';
 
 export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
