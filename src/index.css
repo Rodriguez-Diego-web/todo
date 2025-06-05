@@ -8,19 +8,10 @@
   html, body {
     @apply bg-black text-white font-['Segoe_UI',_sans-serif];
     font-feature-settings: 'liga' 1;
-    /* iOS Lupe verhindern */
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
+    /* Minimale Verhinderung der Lupe */
     -webkit-tap-highlight-color: transparent;
     /* Prevent pull-to-refresh */
     overscroll-behavior-y: none;
-  }
-  
-  /* Ausnahme für Drag-Bereiche */
-  .sortable-item {
-    -webkit-user-select: auto !important;
-    user-select: auto !important;
-    touch-action: pan-y !important;
   }
   
   /* Custom scrollbar styling for dark mode */

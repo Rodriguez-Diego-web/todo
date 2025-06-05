@@ -22,35 +22,6 @@ function AppContent() {
     }
   }, [currentUser, loading]);
 
-  // Verhindern der Lupe auf Apple-Geräten
-  useEffect(() => {
-    // Eine Erkennung für Apple-Geräte
-    const isApple = /iPad|iPhone|iPod|Mac/.test(navigator.userAgent);
-    
-    if (!isApple) return; // Nur auf Apple-Geräten ausführen
-    
-    const preventMagnifyingGlass = (e: TouchEvent) => {
-      const target = e.target as HTMLElement;
-      
-      // Erlaube normales Verhalten in sortable-items
-      if (target.closest('.sortable-item')) {
-        return;
-      }
-      
-      // Bei langem Drücken die Lupe verhindern
-      if (e.touches && e.touches.length === 1) {
-        e.preventDefault();
-      }
-    };
-
-    // Nutze das touchstart-Event für die Lupe
-    document.addEventListener('touchstart', preventMagnifyingGlass, { passive: false });
-
-    return () => {
-      document.removeEventListener('touchstart', preventMagnifyingGlass);
-    };
-  }, []);
-
   // Show splash screens for new users
   if (!loading && currentUser && showSplashScreens) {
     return <SplashScreens onComplete={completeSplashScreens} />;

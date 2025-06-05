@@ -121,8 +121,7 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete, listColor = '#4b
     <div
       ref={setNodeRef}
       style={style}
-      className="w-full group touch-manipulation sortable-item"
-      data-draggable="true"
+      className="w-full group touch-manipulation"
       {...attributes}
       {...listeners}
     >
