@@ -180,17 +180,19 @@ export function SplashScreens({ onComplete }: SplashScreensProps) {
         </div>
 
         {/* Plan Panda Branding */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
-          <img 
-            src={logoWeiss}  
-            alt="Plan Panda Logo"
-            className="w-24 h-24 object-contain opacity-90"
-            onError={(e) => {
-              console.error("Logo konnte nicht geladen werden");
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-            }}
-          />
+        <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-30">
+          <div className="bg-black bg-opacity-70 rounded-full p-2">
+            <img 
+              src={logoWeiss}  
+              alt="Plan Panda Logo"
+              className="w-32 h-32 object-contain"
+              onError={(e) => {
+                console.error("Logo konnte nicht geladen werden");
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>
