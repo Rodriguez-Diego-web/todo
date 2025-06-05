@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logoWeiss from '../assets/logoweiss.png';
 
 interface SplashScreensProps {
   onComplete: () => void;
@@ -179,13 +180,17 @@ export function SplashScreens({ onComplete }: SplashScreensProps) {
         </div>
 
         {/* Plan Panda Branding */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-        
-            <img 
-              src="/logoweiss.png"  
-              className="w-16 h-16 object-contain bottom--10"
-            />
-          
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+          <img 
+            src={logoWeiss}  
+            alt="Plan Panda Logo"
+            className="w-24 h-24 object-contain opacity-90"
+            onError={(e) => {
+              console.error("Logo konnte nicht geladen werden");
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+            }}
+          />
         </div>
       </div>
     </div>
