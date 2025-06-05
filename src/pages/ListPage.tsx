@@ -6,6 +6,7 @@ import { DragDropTaskList } from '../components/DragDropTaskList';
 import { AddTask } from '../components/AddTask';
 import { firestoreService } from '../services/firestoreService';
 import { useAuth } from '../contexts/AuthContext';
+import { getListColor } from '../config/colors';
 import type { Task } from '../types';
 import type { Timestamp } from 'firebase/firestore';
 
@@ -148,12 +149,20 @@ export function ListPage() {
 
   const incompleteTasks = sortedTasks.filter(t => !t.completed);
   const completedTasks = sortedTasks.filter(t => t.completed);
+  
+  const listColor = getListColor(currentList.color);
 
   return (
     <div className="p-4 md:p-8 w-full">
       {/* Header - Mobile optimized */}
       <header className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">{currentList.name}</h1>
+        <div className="flex items-center gap-3 mb-2">
+          <div 
+            className="w-3 h-3 rounded-full flex-shrink-0"
+            style={{ backgroundColor: listColor.value }}
+          />
+          <h1 className="text-2xl md:text-3xl font-bold text-white">{currentList.name}</h1>
+        </div>
         <div className="flex items-center gap-4 text-sm text-gray-400">
           <span>{incompleteTasks.length} offene Aufgaben</span>
           {completedTasks.length > 0 && (
@@ -212,6 +221,7 @@ export function ListPage() {
                 onTaskUpdate={updateTask}
                 onTaskDelete={deleteTask}
                 onTaskReorder={handleTaskReorder}
+                listColor={listColor.value}
               />
             </div>
           )}
@@ -229,6 +239,7 @@ export function ListPage() {
                   onTaskUpdate={updateTask}
                   onTaskDelete={deleteTask}
                   onTaskReorder={() => {}} // No reordering for completed tasks
+                  listColor={listColor.value}
                 />
               </div>
             </div>

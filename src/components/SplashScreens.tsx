@@ -180,14 +180,12 @@ export function SplashScreens({ onComplete }: SplashScreensProps) {
 
         {/* Plan Panda Branding */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-          <div className="flex items-center space-x-2 text-gray-500 text-sm">
+        
             <img 
-              src="/logo.png" 
-              alt="Plan Panda" 
-              className="w-6 h-6 object-contain"
+              src="/logoweiss.png"  
+              className="w-16 h-16 object-contain bottom--10"
             />
-            <span>Plan Panda</span>
-          </div>
+          
         </div>
       </div>
     </div>

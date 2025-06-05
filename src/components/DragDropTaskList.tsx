@@ -25,9 +25,10 @@ interface SortableTaskItemProps {
   onToggle: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
   onDelete: (id: string) => void;
+  listColor?: string;
 }
 
-function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskItemProps) {
+function SortableTaskItem({ task, onToggle, onUpdate, onDelete, listColor = '#4b5563' }: SortableTaskItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
   const [editNotes, setEditNotes] = useState(task.notes || '');
@@ -124,7 +125,22 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
       {...attributes}
       {...listeners}
     >
-      <div className={`flex items-center py-3 px-4 border-b border-[#404040] transition-colors duration-200 ${isDragging ? 'bg-[#2d2d2d]' : ''}`}>
+      <div className={`flex items-center py-3 px-4 border-b transition-colors duration-200 ${
+        isDragging ? 'bg-[#2d2d2d]' : ''
+      } ${
+        task.completed ? 'bg-gray-900/30 border-gray-800/50' : 'border-[#404040]'
+      }`}>
+        
+        {/* Priority indicator with list color */}
+        <div 
+          className="w-1 h-8 rounded-full mr-3 flex-shrink-0 opacity-60"
+          style={{ 
+            backgroundColor: task.priority === 2 ? '#ef4444' : 
+                           task.priority === 1 ? '#eab308' : 
+                           listColor,
+            opacity: task.completed ? 0.3 : 0.6
+          }}
+        />
         
         {/* Checkbox with larger touch area */}
         <div className="flex-shrink-0 -ml-2 -my-2 p-2">
@@ -135,7 +151,7 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
             }}
             className={`block w-5 h-5 rounded-full border-2 relative transition-all duration-200 ${
               task.completed 
-                ? 'bg-blue-600 border-blue-600' 
+                ? 'bg-gray-600 border-gray-600' 
                 : 'border-gray-400 hover:border-blue-400'
             }`}
           >
@@ -149,14 +165,16 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
         
         {/* Task Title - not clickable */}
         <div className="flex-1 min-w-0 ml-2">
-          <h3 className={`text-white ${task.completed ? 'line-through opacity-60' : ''}`}>
+          <h3 className={`${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>
             {task.title}
           </h3>
           {task.notes && (
-            <p className="text-sm text-gray-400 mt-1">{task.notes}</p>
+            <p className={`text-sm mt-1 ${task.completed ? 'text-gray-600' : 'text-gray-400'}`}>
+              {task.notes}
+            </p>
           )}
           {task.dueDate && (
-            <p className="text-xs text-gray-500 mt-1">
+            <p className={`text-xs mt-1 ${task.completed ? 'text-gray-600' : 'text-gray-500'}`}>
               {new Date(task.dueDate).toLocaleDateString('de-DE', { 
                 day: 'numeric', 
                 month: 'short' 
@@ -173,7 +191,9 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
               e.stopPropagation();
               setIsEditing(true);
             }}
-            className="p-2 hover:bg-[#404040] rounded-md transition-colors opacity-0 group-hover:opacity-100 hidden md:block"
+            className={`p-2 hover:bg-[#404040] rounded-md transition-colors opacity-0 group-hover:opacity-100 hidden md:block ${
+              task.completed ? 'opacity-0 hover:opacity-0' : ''
+            }`}
             title="Bearbeiten"
           >
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,12 +205,11 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
           <button
             onClick={(e) => {
               e.stopPropagation();
-              const confirmed = window.confirm('Möchten Sie diese Aufgabe wirklich löschen?');
-              if (confirmed) {
-                onDelete(task.id);
-              }
+              onDelete(task.id);
             }}
-            className="p-2 hover:bg-red-900/30 rounded-md transition-colors text-red-400 hover:text-red-300"
+            className={`p-2 hover:bg-red-900/30 rounded-md transition-colors hover:text-red-300 ${
+              task.completed ? 'text-gray-600' : 'text-red-400'
+            }`}
             title="Löschen"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,6 +228,7 @@ interface DragDropTaskListProps {
   onTaskUpdate: (id: string, updates: Partial<Task>) => void;
   onTaskDelete: (id: string) => void;
   onTaskReorder: (newOrder: Task[]) => void;
+  listColor?: string;
 }
 
 export function DragDropTaskList({
@@ -217,6 +237,7 @@ export function DragDropTaskList({
   onTaskUpdate,
   onTaskDelete,
   onTaskReorder,
+  listColor,
 }: DragDropTaskListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -273,6 +294,7 @@ export function DragDropTaskList({
               onToggle={onTaskToggle}
               onUpdate={onTaskUpdate}
               onDelete={onTaskDelete}
+              listColor={listColor}
             />
           ))}
         </div>

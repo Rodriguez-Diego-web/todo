@@ -85,11 +85,11 @@ export function useLists() {
     }
   };
 
-  const updateList = async (id: string, name: string) => {
+  const updateList = async (id: string, updates: Partial<Pick<List, 'name' | 'color'>>) => {
     if (!currentUser) throw new Error('Not authenticated');
       
     try {
-      await firestoreService.updateList(id, { name });
+      await firestoreService.updateList(id, updates);
       // The real-time listener will update the state automatically
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update list');

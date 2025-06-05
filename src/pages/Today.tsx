@@ -192,6 +192,7 @@ export function Today() {
                 onTaskUpdate={updateTask}
                 onTaskDelete={deleteTask}
                 onTaskReorder={handleTaskReorder}
+                listColor="#3b82f6"
               />
             </div>
           )}
@@ -209,6 +210,7 @@ export function Today() {
                   onTaskUpdate={updateTask}
                   onTaskDelete={deleteTask}
                   onTaskReorder={() => {}} // No reordering for completed tasks
+                  listColor="#3b82f6"
                 />
               </div>
             </div>
