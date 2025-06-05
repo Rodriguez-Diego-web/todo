@@ -8,7 +8,6 @@ import { firestoreService } from '../services/firestoreService';
 import { useAuth } from '../contexts/AuthContext';
 import { getListColor } from '../config/colors';
 import type { Task } from '../types';
-import type { Timestamp } from 'firebase/firestore';
 
 export function ListPage() {
   const { listId } = useParams<{ listId: string }>();
@@ -41,15 +40,15 @@ export function ListPage() {
   }, [currentList, lists, loading, navigate]);
 
   // Helper function to convert Timestamp to Date
-  const toDate = (timestamp: string | Timestamp | null | undefined): Date => {
+  const toDate = (timestamp: string | Date | null | undefined): Date => {
     if (!timestamp) {
       return new Date(); // Return current date as fallback
     }
     if (typeof timestamp === 'string') {
       return new Date(timestamp);
     }
-    // Firebase Timestamp
-    return timestamp.toDate();
+    // Must be a Date object
+    return timestamp;
   };
 
   const handleAddTask = async (

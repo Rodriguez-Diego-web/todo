@@ -42,7 +42,8 @@ export class AuthService {
       name: displayName,
       email: email,
       initials: this.getInitials(displayName),
-      avatar: firebaseUser.photoURL || undefined
+      avatar: firebaseUser.photoURL || undefined,
+      createdAt: new Date().toISOString(),
     };
 
     await this.createUserDocument(user);
@@ -63,7 +64,8 @@ export class AuthService {
         name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Unknown User',
         email: firebaseUser.email || '',
         initials: this.getInitials(firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Unknown User'),
-        avatar: firebaseUser.photoURL || undefined
+        avatar: firebaseUser.photoURL || undefined,
+        createdAt: new Date().toISOString(),
       };
       await this.createUserDocument(user);
       return user;

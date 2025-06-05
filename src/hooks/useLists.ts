@@ -71,7 +71,8 @@ export function useLists() {
     try {
       const newListData: Omit<List, 'id' | 'createdAt' | 'updatedAt'> = {
         name,
-        createdBy: currentUser.uid,
+        ownerId: currentUser.uid,
+        color: '#3b82f6', // Standard-Blau als Standardfarbe
         sharedWith: [],
       };
       

@@ -221,41 +221,18 @@ export class FirestoreService {
 
   // ============ LIST PERMISSIONS ============
   
-  // Add user to list's shared users
-  async shareList(listId: string, userId: string, role: 'editor' | 'viewer' = 'editor'): Promise<void> {
-    // Add user to list's sharedWith array
-    const listRef = doc(db, 'lists', listId);
-    const listDoc = await getDoc(listRef);
-    
-    if (listDoc.exists()) {
-      const listData = listDoc.data() as List;
-      const sharedWith = listData.sharedWith || [];
-      
-      if (!sharedWith.includes(userId)) {
-        await updateDoc(listRef, {
-          sharedWith: [...sharedWith, userId],
-          updatedAt: serverTimestamp()
-        });
-      }
-    }
-
-    // Create permission document
-    await addDoc(collection(db, 'listPermissions'), {
-      listId,
-      userId,
-      role,
-      grantedAt: serverTimestamp()
-    });
-  }
-
   // Check if user has access to list
   async hasListAccess(listId: string, userId: string): Promise<boolean> {
     // Check if user is the owner
     const listDoc = await getDoc(doc(db, 'lists', listId));
     if (listDoc.exists()) {
       const listData = listDoc.data() as List;
-      if (listData.createdBy === userId) return true;
-      if (listData.sharedWith?.includes(userId)) return true;
+      if (listData.ownerId === userId) return true;
+      
+      // Check if user is in sharedWith
+      if (listData.sharedWith) {
+        return listData.sharedWith.some(share => share.userId === userId);
+      }
     }
     
     return false;

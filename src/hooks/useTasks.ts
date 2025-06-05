@@ -67,22 +67,22 @@ export function useTasks(listId?: string) {
         ? maxOrderTask.order + 1 
         : 0; // Starte bei 0, wenn keine Aufgaben existieren
       
-      const newTaskData: Omit<Task, 'id' | 'updatedAt'> = {
+      const newTask: Omit<Task, 'id' | 'updatedAt'> = {
         title: taskData.title,
         notes: taskData.notes,
         dueDate: taskData.dueDate,
-        priority: taskData.priority || 0,
+        priority: (taskData.priority as 0 | 1 | 2) || 0,
         completed: false,
         listId: taskData.listId || 'default',
         createdBy: currentUser.uid,
-        assignedTo: currentUser.uid,
         order: newOrder, // Setze order auf höchsten Wert + 1, damit neue Aufgabe am Ende erscheint
+        createdAt: new Date().toISOString(),
       };
       
-      const taskId = await firestoreService.createTask(newTaskData);
+      const taskId = await firestoreService.createTask(newTask);
       
       // The real-time listener will update the state automatically
-      return { id: taskId, ...newTaskData };
+      return { id: taskId, ...newTask };
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create task');
       throw err;

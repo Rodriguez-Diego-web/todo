@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Invitation } from '../types';
+import type { Invitation, List } from '../types';
 import { firestoreService } from '../services/firestoreService';
 import { useAuth } from '../contexts/AuthContext';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 export function useInvitations() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
@@ -34,20 +36,38 @@ export function useInvitations() {
   }, [currentUser, loadInvitations]);
 
   const acceptInvitation = async (invitationId: string, listId: string) => {
-    if (!currentUser) throw new Error('Not authenticated');
+    if (!currentUser) throw new Error('Benutzer muss angemeldet sein, um eine Einladung anzunehmen');
     
     try {
-      // Update invitation status
+      setLoading(true);
+      
+      // Aktualisiere den Einladungsstatus auf 'accepted'
       await firestoreService.updateInvitationStatus(invitationId, 'accepted');
       
-      // Add user to list
-      await firestoreService.shareList(listId, currentUser.uid, 'editor');
+      // Füge den Benutzer zur Liste direkt über Firestore-Service hinzu, 
+      // da wir die shareList-Methode entfernt haben
+      const listRef = doc(db, 'lists', listId);
+      const listDoc = await getDoc(listRef);
       
-      // Remove from pending invitations
+      if (listDoc.exists()) {
+        const listData = listDoc.data() as List;
+        const sharedWith = listData.sharedWith || [];
+        
+        // Prüfen, ob der Benutzer bereits in der Liste ist
+        if (!sharedWith.some(share => share.userId === currentUser.uid)) {
+          await updateDoc(listRef, {
+            sharedWith: [...sharedWith, { userId: currentUser.uid, role: 'editor' }],
+            updatedAt: serverTimestamp()
+          });
+        }
+      }
+      
       setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to accept invitation');
-      throw err;
+    } catch (error) {
+      console.error('Fehler beim Annehmen der Einladung:', error);
+      setError(error instanceof Error ? error.message : 'Fehler beim Annehmen der Einladung');
+    } finally {
+      setLoading(false);
     }
   };
 

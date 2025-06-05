@@ -117,15 +117,6 @@ export function TaskItem({ task, onToggle, onUpdate, onDelete }: TaskItemProps) 
               {task.title}
             </h3>
             
-            {/* User Avatar for assigned tasks */}
-            {task.assignedTo && (
-              <div className="flex items-center gap-1">
-                <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                  {task.assignedTo.substring(0, 2).toUpperCase()}
-                </div>
-              </div>
-            )}
-            
             {/* Priority and Date indicators */}
             <div className="flex items-center gap-2 text-xs">
               {task.priority > 0 && (
