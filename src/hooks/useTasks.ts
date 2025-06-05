@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Task } from '../types';
 import { firestoreService } from '../services/firestoreService';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,6 +8,21 @@ export function useTasks(listId?: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { currentUser } = useAuth();
+
+  // Wrapper mit useCallback für loadTodayTasks
+  const loadTodayTasks = useCallback(async () => {
+    if (!currentUser) return;
+    
+    try {
+      setLoading(true);
+      const todayTasks = await firestoreService.getTodayTasks(currentUser.uid);
+      setTasks(todayTasks);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load tasks');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser, setLoading, setTasks, setError]);
 
   useEffect(() => {
     if (!currentUser) {
@@ -30,21 +45,7 @@ export function useTasks(listId?: string) {
       // Load today's tasks
       loadTodayTasks();
     }
-  }, [currentUser, listId]);
-
-  const loadTodayTasks = async () => {
-    if (!currentUser) return;
-    
-    try {
-      setLoading(true);
-      const todayTasks = await firestoreService.getTodayTasks(currentUser.uid);
-      setTasks(todayTasks);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load tasks');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [currentUser, listId, loadTodayTasks]);
 
   const createTask = async (taskData: {
     title: string;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Invitation } from '../types';
 import { firestoreService } from '../services/firestoreService';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,17 +9,7 @@ export function useInvitations() {
   const [error, setError] = useState<string | null>(null);
   const { currentUser } = useAuth();
 
-  useEffect(() => {
-    if (!currentUser?.email) {
-      setInvitations([]);
-      setLoading(false);
-      return;
-    }
-
-    loadInvitations();
-  }, [currentUser]);
-
-  const loadInvitations = async () => {
+  const loadInvitations = useCallback(async () => {
     if (!currentUser?.email) return;
     
     try {
@@ -31,7 +21,17 @@ export function useInvitations() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser, setLoading, setInvitations, setError]);
+
+  useEffect(() => {
+    if (!currentUser?.email) {
+      setInvitations([]);
+      setLoading(false);
+      return;
+    }
+
+    loadInvitations();
+  }, [currentUser, loadInvitations]);
 
   const acceptInvitation = async (invitationId: string, listId: string) => {
     if (!currentUser) throw new Error('Not authenticated');
