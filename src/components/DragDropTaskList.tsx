@@ -33,13 +33,6 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
   const [editNotes, setEditNotes] = useState(task.notes || '');
   const [editDueDate, setEditDueDate] = useState(task.dueDate || '');
   const [editPriority, setEditPriority] = useState(task.priority);
-  
-  // Swipe-to-delete states
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
-  const [isLongPressing, setIsLongPressing] = useState(false);
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const [isSwipeDeleteMode, setIsSwipeDeleteMode] = useState(false);
-  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
 
   const {
     attributes,
@@ -54,138 +47,6 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.8 : 1,
-  };
-
-  // Check if user has been warned about swipe delete before
-  const hasBeenWarned = () => {
-    return localStorage.getItem('swipe-delete-warned') === 'true';
-  };
-
-  const setWarned = () => {
-    localStorage.setItem('swipe-delete-warned', 'true');
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (isDragging || isEditing) return;
-    
-    const touch = e.touches[0];
-    setTouchStart({
-      x: touch.clientX,
-      y: touch.clientY,
-      time: Date.now()
-    });
-    
-    // Clear any existing timer
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-    }
-    
-    // Start long press timer with visual feedback
-    const timer = setTimeout(() => {
-      if (touchStart) {
-        setIsLongPressing(true);
-        setIsSwipeDeleteMode(true);
-        
-        // Haptic feedback if available
-        if ('vibrate' in navigator) {
-          navigator.vibrate([50, 30, 50]); // Double vibration pattern
-        }
-        
-        // Prevent text selection
-        e.preventDefault();
-      }
-    }, 600); // Slightly longer delay to be more intentional
-    
-    setLongPressTimer(timer);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!touchStart) return;
-    
-    const touch = e.touches[0];
-    const deltaX = touch.clientX - touchStart.x;
-    const deltaY = Math.abs(touch.clientY - touchStart.y);
-    
-    // If moving too much vertically, cancel long press
-    if (deltaY > 25) {
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        setLongPressTimer(null);
-      }
-      setIsLongPressing(false);
-      setIsSwipeDeleteMode(false);
-      setSwipeOffset(0);
-      return;
-    }
-    
-    // If in delete mode and swiping horizontally
-    if (isLongPressing && isSwipeDeleteMode) {
-      // Only track right swipe (positive deltaX)
-      if (deltaX > 0 && deltaX < 200) {
-        setSwipeOffset(deltaX);
-        e.preventDefault();
-        
-        // Additional haptic feedback at 50% threshold
-        if (deltaX > 80 && deltaX < 85 && 'vibrate' in navigator) {
-          navigator.vibrate(25);
-        }
-      }
-    } else if (Math.abs(deltaX) > 10 || deltaY > 10) {
-      // If user starts moving before long press completes, cancel it
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        setLongPressTimer(null);
-      }
-    }
-  };
-
-  const handleTouchEnd = async () => {
-    // Clear timer if still running
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
-    }
-    
-    if (!touchStart || !isLongPressing || !isSwipeDeleteMode) {
-      setTouchStart(null);
-      setIsLongPressing(false);
-      setSwipeOffset(0);
-      setIsSwipeDeleteMode(false);
-      return;
-    }
-    
-    // If swiped far enough (more than 120px), trigger delete
-    if (swipeOffset > 120) {
-      if (hasBeenWarned()) {
-        // Delete immediately without confirmation
-        onDelete(task.id);
-      } else {
-        // Ask for confirmation first time
-        const confirmed = window.confirm('Möchten Sie diese Aufgabe wirklich löschen? (Diese Frage wird nur einmal gestellt)');
-        if (confirmed) {
-          setWarned();
-          onDelete(task.id);
-        }
-      }
-    }
-    
-    // Reset states
-    setTouchStart(null);
-    setIsLongPressing(false);
-    setSwipeOffset(0);
-    setIsSwipeDeleteMode(false);
-  };
-
-  // Cancel long press on touch cancel
-  const handleTouchCancel = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
-    }
-    setTouchStart(null);
-    setIsLongPressing(false);
-    setSwipeOffset(0);
-    setIsSwipeDeleteMode(false);
   };
 
   const handleSave = () => {
@@ -258,55 +119,12 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
   return (
     <div
       ref={setNodeRef}
-      style={{
-        ...style,
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        WebkitTouchCallout: 'none',
-        touchAction: 'manipulation'
-      }}
-      className="w-full group touch-manipulation relative overflow-hidden select-none"
-      {...(isSwipeDeleteMode ? {} : { ...attributes, ...listeners })}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchCancel}
+      style={style}
+      className="w-full group touch-manipulation"
+      {...attributes}
+      {...listeners}
     >
-      {/* Delete indicator background */}
-      {isSwipeDeleteMode && (
-        <div 
-          className="absolute inset-0 bg-red-600 flex items-center justify-end pr-4 z-0"
-          style={{ opacity: Math.min(swipeOffset / 120, 1) }}
-        >
-          <div className="flex items-center gap-2 text-white">
-            <span className="text-sm font-medium">
-              {swipeOffset > 120 ? 'Loslassen zum Löschen' : 'Weiter wischen →'}
-            </span>
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </div>
-        </div>
-      )}
-
-      {/* Long press indicator */}
-      {touchStart && !isSwipeDeleteMode && (
-        <div className="absolute inset-0 bg-yellow-600/20 flex items-center justify-center z-10">
-          <div className="text-yellow-500 text-sm font-medium animate-pulse">
-            Halten zum Löschen aktivieren...
-          </div>
-        </div>
-      )}
-
-      <div 
-        className={`flex items-center py-3 px-4 border-b border-[#404040] transition-all duration-200 relative z-10 ${
-          isDragging ? 'bg-[#2d2d2d]' : ''
-        } ${isSwipeDeleteMode ? 'bg-[#1f1f1f] shadow-lg' : ''} ${touchStart && !isSwipeDeleteMode ? 'bg-yellow-900/10' : ''}`}
-        style={{
-          transform: isSwipeDeleteMode ? `translateX(${swipeOffset}px)` : undefined,
-          transition: isSwipeDeleteMode ? 'none' : undefined
-        }}
-      >
+      <div className={`flex items-center py-3 px-4 border-b border-[#404040] transition-colors duration-200 ${isDragging ? 'bg-[#2d2d2d]' : ''}`}>
         
         {/* Checkbox with larger touch area */}
         <div className="flex-shrink-0 -ml-2 -my-2 p-2">
@@ -347,60 +165,32 @@ function SortableTaskItem({ task, onToggle, onUpdate, onDelete }: SortableTaskIt
           )}
         </div>
         
-        {/* Mobile hint - only show when not in any special mode */}
-        {!isSwipeDeleteMode && !touchStart && (
-          <div className="flex-shrink-0 ml-2 md:hidden">
-            <div className="text-xs text-gray-500 text-center opacity-70">
-              <div>Lang drücken</div>
-              <div>zum Löschen</div>
-            </div>
-          </div>
-        )}
-        
-        {/* Delete mode instruction */}
-        {isSwipeDeleteMode && (
-          <div className="flex-shrink-0 ml-2 md:hidden">
-            <div className="text-xs text-red-400 text-center font-medium animate-pulse">
-              <div>Nach rechts</div>
-              <div>wischen →</div>
-            </div>
-          </div>
-        )}
-        
-        {/* Star Icon (Favorite) - Hidden on mobile, visible on desktop */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            // TODO: Add favorite functionality
-          }}
-          className="flex-shrink-0 ml-4 p-2 rounded-md transition-colors hidden md:block hover:bg-[#404040]"
-          title="Zu Favoriten hinzufügen"
-        >
-          <svg className="w-5 h-5 text-gray-400 hover:text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-          </svg>
-        </button>
-
-        {/* Desktop Edit/Delete Buttons */}
-        <div className="hidden md:flex items-center gap-1 ml-2">
+        {/* Mobile and Desktop Actions */}
+        <div className="flex items-center gap-1 ml-2">
+          {/* Edit Button - Desktop only */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               setIsEditing(true);
             }}
-            className="p-1 hover:bg-[#404040] rounded-md transition-colors opacity-0 group-hover:opacity-100"
+            className="p-2 hover:bg-[#404040] rounded-md transition-colors opacity-0 group-hover:opacity-100 hidden md:block"
             title="Bearbeiten"
           >
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </button>
+          
+          {/* Delete Button - Always visible */}
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onDelete(task.id);
+              const confirmed = window.confirm('Möchten Sie diese Aufgabe wirklich löschen?');
+              if (confirmed) {
+                onDelete(task.id);
+              }
             }}
-            className="p-1 hover:bg-red-900/30 rounded-md transition-colors text-red-400 opacity-0 group-hover:opacity-100"
+            className="p-2 hover:bg-red-900/30 rounded-md transition-colors text-red-400 hover:text-red-300"
             title="Löschen"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
