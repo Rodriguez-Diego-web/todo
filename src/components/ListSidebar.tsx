@@ -180,7 +180,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                             e.stopPropagation();
                             setColorMenuId(colorMenuId === list.id ? null : list.id);
                           }}
-                          className="p-1.5 rounded-md hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+                          className="p-1.5 rounded-md hover:bg-theme-secondary text-theme-secondary hover:text-theme-primary transition-colors"
                           title="Farbe ändern"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,7 +194,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                             e.stopPropagation();
                             handleShareList(list.id);
                           }}
-                          className="p-1.5 rounded-md hover:bg-gray-800 text-gray-400 hover:text-[#47a528] transition-colors"
+                          className="p-1.5 rounded-md hover:bg-theme-secondary text-theme-secondary hover:text-[#47a528] transition-colors"
                           title="Liste teilen"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,10 +206,10 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            setEditName(list.name);
                             setEditingId(list.id);
+                            setEditName(list.name);
                           }}
-                          className="p-1.5 rounded-md hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+                          className="p-1.5 rounded-md hover:bg-theme-secondary text-theme-secondary hover:text-blue-500 transition-colors"
                           title="Liste umbenennen"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,9 +221,11 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            handleDeleteList(list.id);
+                            if (window.confirm(`Möchten Sie "${list.name}" wirklich löschen?`)) {
+                              handleDeleteList(list.id);
+                            }
                           }}
-                          className="p-1.5 rounded-md hover:bg-gray-800 text-gray-400 hover:text-red-400 transition-colors"
+                          className="p-1.5 rounded-md hover:bg-theme-secondary text-theme-secondary hover:text-red-500 transition-colors"
                           title="Liste löschen"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,14 +240,14 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
               
               {/* Color picker dropdown */}
               {colorMenuId === list.id && (
-                <div className="absolute right-0 top-full mt-1 bg-black border border-gray-800 rounded-lg shadow-lg p-2 z-20">
+                <div className="absolute right-0 top-full mt-1 bg-theme-primary border border-theme-primary rounded-lg shadow-lg p-2 z-20">
                   <div className="grid grid-cols-3 gap-1">
                     {listColors.map((color) => (
                       <button
                         key={color.value}
                         onClick={() => handleUpdateListColor(list.id, color.value)}
                         className={`w-8 h-8 rounded-md hover:scale-110 transition-transform ${
-                          list.color === color.value ? 'ring-2 ring-white' : ''
+                          list.color === color.value ? 'ring-2 ring-theme-primary' : ''
                         }`}
                         style={{ backgroundColor: color.value }}
                         title={color.name}
@@ -262,16 +264,16 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
       {/* Share Modal */}
       {shareListId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-black rounded-lg p-6 w-96 max-w-md mx-4 border border-gray-800">
+          <div className="bg-theme-primary rounded-lg p-6 w-96 max-w-md mx-4 border border-theme-primary">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-theme-primary">
                 Liste teilen: {currentList?.name}
               </h3>
               <button 
                 onClick={() => setShareListId(null)}
-                className="p-1 hover:bg-gray-800 rounded"
+                className="p-1 hover:bg-theme-secondary rounded"
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-theme-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -279,7 +281,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-theme-secondary mb-2">
                   E-Mail-Adresse eingeben
                 </label>
                 <input
@@ -293,7 +295,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
               
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-theme-secondary mb-2">
                     Berechtigung
                   </label>
                   <select 
@@ -327,11 +329,11 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
             
             {/* Shared with info */}
             {currentList?.sharedWith && currentList.sharedWith.length > 0 && (
-              <div className="mt-6 pt-4 border-t border-gray-800">
-                <h4 className="text-sm font-medium text-gray-300 mb-3">
+              <div className="mt-6 pt-4 border-t border-theme-primary">
+                <h4 className="text-sm font-medium text-theme-secondary mb-3">
                   Geteilt mit {currentList.sharedWith.length} Personen
                 </h4>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-theme-secondary">
                   Geteilte Benutzer werden hier angezeigt, sobald sie die Einladung annehmen.
                 </p>
               </div>
@@ -360,7 +362,7 @@ export function ListSidebar({ onNavigate }: ListSidebarProps = {}) {
         <button
           type="button"
           onClick={() => setIsCreating(true)}
-          className="w-full flex items-center px-4 py-3 mx-3 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-all duration-200 mt-2"
+          className="w-full flex items-center px-4 py-3 mx-3 text-sm text-theme-secondary hover:text-theme-primary hover:bg-theme-secondary rounded-lg transition-all duration-200 mt-2"
         >
           <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

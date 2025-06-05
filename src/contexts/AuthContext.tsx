@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { User } from '../types';
 import { authService } from '../services/authService';
+import { userService } from '../services/userService';
 
 interface AuthContextType {
   currentUser: FirebaseUser | null;
@@ -11,6 +12,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  updateUserProfile: (profileData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -71,6 +73,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const updateUserProfile = async (profileData: Partial<User>) => {
+    if (!currentUser || !userProfile) {
+      throw new Error('Benutzer ist nicht angemeldet.');
+    }
+    
+    try {
+      await userService.updateUserProfile(currentUser.uid, profileData);
+      setUserProfile({ ...userProfile, ...profileData });
+    } catch (error) {
+      console.error('Fehler beim Aktualisieren des Profils:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChange(async (user) => {
       setCurrentUser(user);
@@ -100,7 +116,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signIn,
     signUp,
     signInWithGoogle,
-    signOut
+    signOut,
+    updateUserProfile
   };
 
   return (

@@ -5,19 +5,50 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f3f4f6;
+    --color-bg-tertiary: #e5e7eb;
+    --color-border-primary: #d1d5db;
+    --color-border-secondary: #e5e7eb;
+    --color-text-primary: #111827;
+    --color-text-secondary: #4b5563;
+    --color-text-tertiary: #6b7280;
+  }
+  
+  .dark {
+    --color-bg-primary: #000000;
+    --color-bg-secondary: #111827;
+    --color-bg-tertiary: #1f2937;
+    --color-border-primary: #374151;
+    --color-border-secondary: #1f2937;
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #d1d5db;
+    --color-text-tertiary: #9ca3af;
+  }
+  
   html, body {
-    @apply bg-black text-white font-['Segoe_UI',_sans-serif];
+    @apply font-['Segoe_UI',_sans-serif] transition-colors duration-200;
     font-feature-settings: 'liga' 1;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
     /* Minimale Verhinderung der Lupe */
     -webkit-tap-highlight-color: transparent;
     /* Prevent pull-to-refresh */
     overscroll-behavior-y: none;
   }
   
-  /* Custom scrollbar styling for dark mode */
+  /* Custom scrollbar styling */
   * {
     scrollbar-width: thin;
+  }
+  
+  .dark * {
     scrollbar-color: #374151 transparent;
+  }
+  
+  .light * {
+    scrollbar-color: #d1d5db transparent;
   }
   
   /* Damit Input-Felder weiterhin benutzbar sind */
@@ -34,23 +65,55 @@
     background: transparent;
   }
   
-  *::-webkit-scrollbar-thumb {
+  .dark *::-webkit-scrollbar-thumb {
     background: #374151;
     border-radius: 3px;
   }
   
-  *::-webkit-scrollbar-thumb:hover {
+  .dark *::-webkit-scrollbar-thumb:hover {
     background: #4b5563;
   }
+  
+  .light *::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+  }
+  
+  .light *::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+}
+
+/* Automatische Hintergrundfarben für Light/Dark Mode */
+.bg-theme-primary {
+  background-color: var(--color-bg-primary);
+}
+.bg-theme-secondary {
+  background-color: var(--color-bg-secondary);
+}
+.bg-theme-tertiary {
+  background-color: var(--color-bg-tertiary);
+}
+.border-theme-primary {
+  border-color: var(--color-border-primary);
+}
+.text-theme-primary {
+  color: var(--color-text-primary);
+}
+.text-theme-secondary {
+  color: var(--color-text-secondary);
 }
 
 @layer components {
   .ms-card {
-    @apply bg-gray-900 rounded-lg shadow-lg border border-gray-800 transition-all duration-200;
+    @apply rounded-lg shadow-lg transition-all duration-200;
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-primary);
   }
   
   .ms-card:hover {
-    @apply shadow-xl border-gray-700;
+    @apply shadow-xl;
+    border-color: var(--color-border-secondary);
   }
   
   .ms-button-primary {
@@ -70,15 +133,31 @@
   }
   
   .ms-button-secondary {
-    @apply bg-gray-800 hover:bg-gray-700 text-white px-4 py-2.5 rounded-lg font-medium transition-all duration-200 border border-gray-700;
+    @apply px-4 py-2.5 rounded-lg font-medium transition-all duration-200;
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border-primary);
   }
   
   .ms-input {
-    @apply w-full px-4 py-3 border border-gray-700 rounded-lg bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-[#0078d4]/40 focus:border-[#0078d4] transition-all duration-200 placeholder-gray-400;
+    @apply w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0078d4]/40 focus:border-[#0078d4] transition-all duration-200;
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border-primary);
+  }
+  
+  .ms-input::placeholder {
+    color: var(--color-text-tertiary);
   }
   
   .ms-sidebar-item {
-    @apply flex items-center justify-between px-4 py-3 mx-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-800 text-gray-300 hover:text-white;
+    @apply flex items-center justify-between px-4 py-3 mx-3 rounded-lg text-sm font-medium transition-all duration-200;
+    color: var(--color-text-secondary);
+  }
+  
+  .ms-sidebar-item:hover {
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
   }
   
   .ms-sidebar-item.active {
@@ -86,7 +165,13 @@
   }
   
   .ms-sidebar-category {
-    @apply flex items-center px-4 py-3 mx-3 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-800 text-gray-300 hover:text-white cursor-pointer;
+    @apply flex items-center px-4 py-3 mx-3 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer;
+    color: var(--color-text-secondary);
+  }
+  
+  .ms-sidebar-category:hover {
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
   }
   
   .ms-sidebar-category.active {
@@ -94,11 +179,18 @@
   }
   
   .ms-task-item {
-    @apply bg-gray-900 border border-gray-800 rounded-lg p-5 transition-all duration-200 hover:shadow-lg hover:border-gray-700;
+    @apply rounded-lg p-5 transition-all duration-200 hover:shadow-lg;
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-primary);
+  }
+  
+  .ms-task-item:hover {
+    border-color: var(--color-border-secondary);
   }
   
   .ms-checkbox {
-    @apply w-5 h-5 rounded-full border-2 border-gray-500 transition-all duration-200 hover:border-[#0078d4] cursor-pointer relative;
+    @apply w-5 h-5 rounded-full transition-all duration-200 hover:border-[#0078d4] cursor-pointer relative;
+    border: 2px solid var(--color-border-primary);
   }
   
   .ms-checkbox.checked {
@@ -106,18 +198,62 @@
   }
   
   .ms-user-profile {
-    @apply flex items-center gap-3 p-4 border-b border-gray-800 mb-2;
+    @apply flex items-center gap-3 p-4 mb-2;
+    border-bottom: 1px solid var(--color-border-primary);
   }
   
   .ms-user-avatar {
-    @apply w-10 h-10 rounded-full bg-gradient-to-br from-[#0078d4] to-[#4cc2ff] flex items-center justify-center text-white font-bold text-sm;
+    @apply w-12 h-12 rounded-full bg-gradient-to-br from-[#0078d4] to-[#4cc2ff] flex items-center justify-center text-white font-bold text-base;
   }
   
   .ms-count-badge {
-    @apply bg-gray-800 text-gray-300 text-xs px-2 py-1 rounded-full font-medium;
+    @apply text-xs px-2 py-1 rounded-full font-medium;
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-secondary);
   }
   
   .ms-list-icon {
-    @apply w-5 h-5 mr-3 text-gray-400;
+    @apply w-5 h-5 mr-3;
+    color: var(--color-text-tertiary);
   }
+}
+
+/* Neue Animationen */
+@keyframes progress {
+  0% {
+    width: 0;
+    transform: translateX(0);
+  }
+  50% {
+    width: 100%;
+    transform: translateX(0);
+  }
+  100% {
+    width: 100%;
+    transform: translateX(100%);
+  }
+}
+
+.animate-progress {
+  animation: progress 1.5s infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.animate-glow {
+  animation: glow 2s infinite;
+}
+
+/* Aktive Seiten-Indikator */
+.page-indicator {
+  @apply absolute left-0 w-1 bg-blue-500 rounded-r-full transition-all duration-300;
 }

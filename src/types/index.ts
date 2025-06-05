@@ -5,11 +5,11 @@ export interface Task {
   listId: string;
   title: string;
   notes?: string;
-  dueDate?: string;      // ISO 8601
+  dueDate?: string | null;
   priority: 0 | 1 | 2;   // 0=Low,1=Medium,2=High
   completed: boolean;
-  updatedAt: string | Timestamp; // Firebase serverTimestamp
-  assignedTo?: string; // User ID
+  updatedAt: Date | string;
+  createdAt: Date | string;
   createdBy: string; // User ID
   order?: number; // For drag and drop ordering
 }
@@ -17,11 +17,14 @@ export interface Task {
 export interface List {
   id: string;            // UUID
   name: string;
-  createdAt: string | Timestamp; // Firebase serverTimestamp
-  updatedAt: string | Timestamp; // Firebase serverTimestamp
-  createdBy: string; // User ID
-  sharedWith: string[]; // Array of user IDs - not optional anymore
-  color?: string; // For list color themes
+  color: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  ownerId: string;
+  sharedWith?: {
+    userId: string;
+    role: 'editor' | 'viewer';
+  }[];
 }
 
 export interface User {
@@ -29,7 +32,16 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  initials: string; // For display in UI
+  initials?: string;
+  createdAt: Date | string;
+  lastLogin?: Date | string;
+  notificationsEnabled?: boolean;
+  notificationSettings?: {
+    taskReminders: boolean;
+    invitations: boolean;
+    listUpdates: boolean;
+    updatedAt: Date | string;
+  };
 }
 
 export interface Invitation {
@@ -38,7 +50,7 @@ export interface Invitation {
   inviterUserId: string;
   inviteeEmail: string;
   status: 'pending' | 'accepted' | 'rejected';
-  createdAt: string | Timestamp; // Firebase serverTimestamp
+  createdAt: Date | string;
 }
 
 export interface ListPermission {
