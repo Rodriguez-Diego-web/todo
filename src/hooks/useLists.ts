@@ -11,7 +11,7 @@ export function useLists() {
 
   const loadAllLists = useCallback(async () => {
     if (!currentUser) return;
-    
+
     try {
       setLoading(true);
       const [userLists, sharedLists] = await Promise.all([
@@ -87,7 +87,7 @@ export function useLists() {
 
   const updateList = async (id: string, name: string) => {
     if (!currentUser) throw new Error('Not authenticated');
-    
+      
     try {
       await firestoreService.updateList(id, { name });
       // The real-time listener will update the state automatically

@@ -48,9 +48,9 @@ export function useTasks(listId?: string) {
 
   const createTask = async (taskData: {
     title: string;
-    notes?: string;
-    dueDate?: string;
-    priority?: 0 | 1 | 2;
+      notes?: string;
+      dueDate?: string;
+      priority?: 0 | 1 | 2;
     listId?: string;
   }) => {
     if (!currentUser) throw new Error('Not authenticated');
@@ -79,7 +79,7 @@ export function useTasks(listId?: string) {
 
   const updateTask = async (taskId: string, updates: Partial<Task>) => {
     if (!currentUser) throw new Error('Not authenticated');
-    
+      
     try {
       await firestoreService.updateTask(taskId, updates);
       // The real-time listener will update the state automatically
@@ -140,8 +140,8 @@ export function useTasks(listId?: string) {
         setTasks(listTasks);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load tasks');
-      } finally {
-        setLoading(false);
+    } finally {
+      setLoading(false);
       }
     } else {
       loadTodayTasks();

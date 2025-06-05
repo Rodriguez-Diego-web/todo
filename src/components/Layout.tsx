@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ListSidebar } from './ListSidebar';
 import { useAuth } from '../contexts/AuthContext';
 import { InvitationsModal } from './InvitationsModal';
+import { SearchModal } from './SearchModal';
 import { useInvitations } from '../hooks/useInvitations';
 import { useSplashScreens } from '../hooks/useSplashScreens';
 import React from 'react';
@@ -11,6 +12,7 @@ export function Layout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [invitationsOpen, setInvitationsOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { userProfile, signOut } = useAuth();
   const { invitations } = useInvitations();
   const { resetSplashScreens } = useSplashScreens();
@@ -19,6 +21,21 @@ export function Layout() {
     { id: 'today', name: 'Mein Tag', icon: 'sun', path: '/', count: 0 },
     { id: 'important', name: 'Wichtig', icon: 'star', path: '/important', count: 0 },
   ];
+
+  // Keyboard shortcut for search (Cmd/Ctrl + K)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -60,6 +77,18 @@ export function Layout() {
       )}
     </button>
   );
+
+  const SearchButton = () => (
+    <button
+      onClick={() => setSearchOpen(true)}
+      className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+      title="Suchen (⌘K / Ctrl+K)"
+    >
+      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </button>
+  );
   
   return (
     <div className="h-full bg-black flex flex-col md:flex-row">
@@ -76,6 +105,7 @@ export function Layout() {
         </button>
         <h1 className="text-lg font-semibold text-white">Plan Panda</h1>
         <div className="flex items-center gap-2">
+          <SearchButton />
           <NotificationBell />
           <button
             onClick={handleSignOut}
@@ -105,6 +135,7 @@ export function Layout() {
               <h3 className="font-medium text-white">{userProfile?.name || 'User'}</h3>
             </div>
             <div className="flex items-center gap-2">
+              <SearchButton />
               <NotificationBell />
               <button
                 onClick={handleSignOut}
@@ -168,6 +199,7 @@ export function Layout() {
             <h3 className="font-medium text-white">{userProfile?.name || 'User'}</h3>
           </div>
           <div className="flex items-center gap-2">
+            <SearchButton />
             <NotificationBell />
             <button
               onClick={handleSignOut}
@@ -223,10 +255,15 @@ export function Layout() {
         <Outlet />
       </main>
 
-      {/* Invitations Modal */}
+      {/* Modals */}
       <InvitationsModal 
         isOpen={invitationsOpen} 
         onClose={() => setInvitationsOpen(false)} 
+      />
+      
+      <SearchModal
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
       />
     </div>
   );

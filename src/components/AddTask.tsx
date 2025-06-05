@@ -119,14 +119,14 @@ export function AddTask({ onAdd }: AddTaskProps) {
               </div>
               
               {/* Due Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Fälligkeitsdatum
-                </label>
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Fälligkeitsdatum
+                  </label>
+                  <input
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
                   className="w-full bg-[#1f1f1f] border border-[#404040] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
                 />
               </div>
