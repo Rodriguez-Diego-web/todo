@@ -1,16 +1,28 @@
 const CACHE_NAME = 'plan-panda-v1';
-const urlsToCache = [
+const STATIC_CACHE = 'static-v1';
+const DYNAMIC_CACHE = 'dynamic-v1';
+
+const STATIC_ASSETS = [
   '/',
+  '/index.html',
+  '/manifest.webmanifest',
   '/static/js/bundle.js',
   '/static/css/main.css',
-  '/manifest.webmanifest'
+  '/icon-192.png',
+  '/icon-512.png',
+  '/favicon.ico',
+  '/offline.html'
 ];
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+    caches.open(STATIC_CACHE)
+      .then((cache) => {
+        console.log('Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
+      })
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -20,7 +32,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
+          .filter((name) => name !== STATIC_CACHE && name !== DYNAMIC_CACHE)
           .map((name) => caches.delete(name))
       );
     }).then(() => self.clients.claim())
@@ -39,6 +51,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Handle API requests differently
+  if (event.request.url.includes('/api/')) {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => {
+          return new Response(JSON.stringify({ error: 'Offline' }), {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -46,7 +71,35 @@ self.addEventListener('fetch', (event) => {
         if (response) {
           return response;
         }
-        return fetch(event.request);
+
+        // Clone the request
+        const fetchRequest = event.request.clone();
+
+        return fetch(fetchRequest)
+          .then((response) => {
+            // Check if we received a valid response
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Clone the response
+            const responseToCache = response.clone();
+
+            // Cache the response
+            caches.open(DYNAMIC_CACHE)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          })
+          .catch(() => {
+            // If offline and requesting a page, return offline page
+            if (event.request.mode === 'navigate') {
+              return caches.match('/offline.html');
+            }
+            return new Response('Offline', { status: 503 });
+          });
       })
   );
 });
@@ -59,13 +112,15 @@ self.addEventListener('push', (event) => {
     const data = event.data.json();
     const options = {
       body: data.body || 'Neue Benachrichtigung',
-      icon: data.icon || '/logo.png',
+      icon: data.icon || '/icon-192.png',
       badge: data.badge || '/favicon-32x32.png',
       data: {
         url: data.url || '/',
         actionId: data.actionId
       },
-      actions: data.actions || []
+      actions: data.actions || [],
+      vibrate: [100, 50, 100],
+      requireInteraction: true
     };
 
     event.waitUntil(

@@ -4,6 +4,7 @@ import { useTasks } from '../hooks/useTasks';
 import { useLists } from '../hooks/useLists';
 import { DragDropTaskList } from '../components/DragDropTaskList';
 import { AddTask } from '../components/AddTask';
+import { PullToRefresh } from '../components/PullToRefresh';
 import { firestoreService } from '../services/firestoreService';
 import { useAuth } from '../contexts/AuthContext';
 import { getListColor } from '../config/colors';
@@ -13,8 +14,8 @@ export function ListPage() {
   const { listId } = useParams<{ listId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { lists } = useLists();
-  const { tasks, loading, error, createTask, updateTask, toggleComplete, deleteTask, reorderTasks } = useTasks(listId);
+  const { lists, refetch: refetchLists } = useLists();
+  const { tasks, loading, error, createTask, updateTask, toggleComplete, deleteTask, reorderTasks, refetch: refetchTasks } = useTasks(listId);
   const { currentUser } = useAuth();
   const [showShareModal, setShowShareModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -38,6 +39,13 @@ export function ListPage() {
       navigate('/');
     }
   }, [currentList, lists, loading, navigate]);
+
+  const handleRefresh = async () => {
+    await Promise.all([
+      refetchLists(),
+      refetchTasks()
+    ]);
+  };
 
   // Helper function to convert Timestamp to Date
   const toDate = (timestamp: string | Date | null | undefined): Date => {
@@ -147,133 +155,72 @@ export function ListPage() {
     return null;
   }
 
-  // Sort tasks: first by completion status, then by manual order (if exists), then by priority, then by creation time
-  const sortedTasks = [...tasks].sort((a, b) => {
-    // 1. Incomplete tasks first
-    if (a.completed !== b.completed) {
-      return a.completed ? 1 : -1;
-    }
-    
-    // 2. If both have manual order, use that
-    if (typeof a.order === 'number' && typeof b.order === 'number') {
-      return a.order - b.order;
-    }
-    
-    // 3. If only one has order, it comes first
-    if (typeof a.order === 'number' && typeof b.order !== 'number') {
-      return -1;
-    }
-    if (typeof a.order !== 'number' && typeof b.order === 'number') {
-      return 1;
-    }
-    
-    // 4. Priority sorting (higher priority first)
-    if (a.priority !== b.priority) {
-      return b.priority - a.priority;
-    }
-    
-    // 5. Creation time (newer first)
-    return toDate(a.updatedAt).getTime() - toDate(b.updatedAt).getTime();
-  });
-
-  const incompleteTasks = sortedTasks.filter(t => !t.completed);
-  const completedTasks = sortedTasks.filter(t => t.completed);
-  
   const listColor = getListColor(currentList.color);
 
   return (
-    <div className="p-4 md:p-8 w-full">
-      {/* Header - Mobile optimized */}
-      <header className="mb-6">
-        <div className="flex items-center gap-4 text-sm text-gray-400">
-          <span>{incompleteTasks.length} offene Aufgaben</span>
-          {completedTasks.length > 0 && (
-            <span>{completedTasks.length} erledigt</span>
-          )}
-        </div>
-      </header>
-
-      {/* Add Task - Mobile optimized */}
-      <div className="mb-6">
-        <AddTask onAdd={handleAddTask} />
-      </div>
-
-      {tasks.length === 0 ? (
-        <div className="text-center py-12">
-          <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          <h3 className="text-lg font-medium text-theme-primary mb-2">Keine Aufgaben</h3>
-          <p className="text-gray-400">
-            Diese Liste ist noch leer. Fügen Sie Ihre erste Aufgabe hinzu!
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Incomplete Tasks with Drag & Drop */}
-          {incompleteTasks.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-theme-primary">
-                  Aufgaben ({incompleteTasks.length})
-                </h2>
-                <div className="text-xs text-gray-400 flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
-                  </svg>
-                  Ziehen zum Sortieren
-                </div>
-              </div>
-              <DragDropTaskList
-                tasks={incompleteTasks}
-                onTaskToggle={toggleComplete}
-                onTaskUpdate={updateTask}
-                onTaskDelete={deleteTask}
-                onTaskReorder={handleTaskReorder}
-                listColor={listColor.value}
+    <div className="flex-1 flex flex-col h-full">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-theme-primary">
+            <div className="flex items-center">
+              <div 
+                className="w-3 h-3 rounded-full mr-3"
+                style={{ backgroundColor: listColor.value }}
               />
-          </div>
-          )}
-
-          {/* Completed Tasks - No drag/drop needed */}
-          {completedTasks.length > 0 && (
-            <div className="pt-6 border-t border-gray-800">
-              <h2 className="text-lg font-semibold text-gray-300 mb-4">
-                Erledigt ({completedTasks.length})
-              </h2>
-              <div className="opacity-60">
-                <DragDropTaskList
-                  tasks={completedTasks}
-                  onTaskToggle={toggleComplete}
-                  onTaskUpdate={updateTask}
-                  onTaskDelete={deleteTask}
-                  onTaskReorder={() => {}} // No reordering for completed tasks
-                  listColor={listColor.value}
-                  />
-              </div>
+              <h1 className="text-xl font-semibold" style={{ color: listColor.value }}>
+                {currentList.name}
+              </h1>
             </div>
-          )}
+            
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="p-2 hover:bg-theme-secondary rounded-lg transition-colors"
+              title="Liste teilen"
+            >
+              <svg className="w-5 h-5 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Task List */}
+          <div className="flex-1 overflow-y-auto">
+            <DragDropTaskList
+              tasks={tasks}
+              onToggleComplete={toggleComplete}
+              onDelete={deleteTask}
+              onReorder={handleTaskReorder}
+            />
+          </div>
+
+          {/* Add Task */}
+          <div className="p-4 border-t border-theme-primary">
+            <AddTask onAdd={handleAddTask} />
+          </div>
         </div>
-      )}
+      </PullToRefresh>
 
       {/* Share Modal */}
       {showShareModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-theme-primary rounded-lg w-full max-w-md border border-theme-primary">
-            <div className="flex items-center justify-between p-6 border-b border-theme-primary">
-              <h3 className="text-lg font-semibold text-theme-primary">
-                Liste teilen: {currentList?.name}
-              </h3>
-              <button 
+          <div className="bg-[#2d2d2d] rounded-lg w-full max-w-md">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-[#404040]">
+              <h2 className="text-xl font-semibold text-white">
+                Liste teilen
+              </h2>
+              <button
                 onClick={() => setShowShareModal(false)}
-                className="p-1 hover:bg-theme-secondary rounded"
+                className="p-2 hover:bg-[#404040] rounded-lg transition-colors"
               >
-                <svg className="w-5 h-5 text-theme-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            
+
+            {/* Body */}
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-theme-secondary mb-2">

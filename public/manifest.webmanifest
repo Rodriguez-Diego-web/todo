@@ -8,7 +8,36 @@
   "orientation": "portrait",
   "scope": "/",
   "start_url": "/",
+  "categories": ["productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "/splash-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Plan Panda Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Neue Aufgabe",
+      "short_name": "Neu",
+      "description": "Erstelle eine neue Aufgabe",
+      "url": "/new-task",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
@@ -20,6 +49,11 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }
