@@ -15,16 +15,13 @@ export interface Task {
 }
 
 export interface List {
-  id: string;            // UUID
+  id: string;
   name: string;
+  createdBy: string;
   color: string;
+  sharedWith: string[];
   createdAt: Date | string;
   updatedAt: Date | string;
-  createdBy: string;     // ID des Erstellers
-  sharedWith?: {
-    userId: string;
-    role: 'editor' | 'viewer';
-  }[];
 }
 
 export interface User {

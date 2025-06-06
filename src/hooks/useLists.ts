@@ -76,17 +76,10 @@ export function useLists() {
         sharedWith: [],
       };
       
-      console.log('Creating new list with data:', newListData);
       const listId = await firestoreService.createList(newListData);
-      console.log('List created with ID:', listId);
       
       // The real-time listener will update the state automatically
-      return { 
-        id: listId, 
-        ...newListData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      return { id: listId, ...newListData };
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create list');
       throw err;

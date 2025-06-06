@@ -44,8 +44,7 @@ export function useInvitations() {
       // Aktualisiere den Einladungsstatus auf 'accepted'
       await firestoreService.updateInvitationStatus(invitationId, 'accepted');
       
-      // Füge den Benutzer zur Liste direkt über Firestore-Service hinzu, 
-      // da wir die shareList-Methode entfernt haben
+      // Füge den Benutzer zur Liste direkt über Firestore-Service hinzu
       const listRef = doc(db, 'lists', listId);
       const listDoc = await getDoc(listRef);
       
@@ -54,9 +53,9 @@ export function useInvitations() {
         const sharedWith = listData.sharedWith || [];
         
         // Prüfen, ob der Benutzer bereits in der Liste ist
-        if (!sharedWith.some(share => share.userId === currentUser.uid)) {
+        if (!sharedWith.includes(currentUser.uid)) {
           await updateDoc(listRef, {
-            sharedWith: [...sharedWith, { userId: currentUser.uid, role: 'editor' }],
+            sharedWith: [...sharedWith, currentUser.uid],
             updatedAt: serverTimestamp()
           });
         }
