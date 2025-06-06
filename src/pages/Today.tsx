@@ -2,9 +2,10 @@ import { useTasks } from '../hooks/useTasks';
 import { DragDropTaskList } from '../components/DragDropTaskList';
 import { AddTask } from '../components/AddTask';
 import type { Task } from '../types';
+import { PullToRefresh } from '../components/PullToRefresh';
 
 export function Today() {
-  const { tasks, loading, error, createTask, updateTask, toggleComplete, deleteTask, reorderTasks } = useTasks();
+  const { tasks, loading, error, createTask, updateTask, toggleComplete, deleteTask, reorderTasks, refetch } = useTasks();
 
   const handleAddTask = async (
     title: string, 
@@ -71,151 +72,99 @@ export function Today() {
     );
   }
 
-  // Sort tasks: first by completion status, then by manual order (if exists), then by priority, then by creation time
+  // Sort tasks for today view: incomplete first, then by priority, then by title
   const sortedTasks = [...tasks].sort((a, b) => {
     // 1. Incomplete tasks first
     if (a.completed !== b.completed) {
       return a.completed ? 1 : -1;
     }
     
-    // 2. If both have manual order, use that
-    if (typeof a.order === 'number' && typeof b.order === 'number') {
-      return a.order - b.order;
-    }
-    
-    // 3. If only one has order, it comes first
-    if (typeof a.order === 'number' && typeof b.order !== 'number') {
-      return -1;
-    }
-    if (typeof a.order !== 'number' && typeof b.order === 'number') {
-      return 1;
-    }
-    
-    // 4. Priority sorting (higher priority first)
+    // 2. Order by priority (high to low)
     if (a.priority !== b.priority) {
       return b.priority - a.priority;
     }
     
-    // 5. Creation time (newer first)
-    return toDate(b.updatedAt).getTime() - toDate(a.updatedAt).getTime();
+    // 3. Order by due date (older first)
+    if (a.dueDate && b.dueDate) {
+      return toDate(a.dueDate).getTime() - toDate(b.dueDate).getTime();
+    }
+    
+    // 4. Alphabetically by title as last resort
+    return (a.title || '').localeCompare(b.title || '');
   });
 
   const incompleteTasks = sortedTasks.filter(t => !t.completed);
   const completedTasks = sortedTasks.filter(t => t.completed);
-  
-  const currentDate = new Date().toLocaleDateString('de-DE', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
 
   return (
     <div className="p-4 md:p-8 w-full">
-      {/* Header - Mobile optimized */}
-      <header className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">Mein Tag</h1>
-        </div>
-        <p className="text-gray-400 text-sm">{currentDate}</p>
-        <div className="flex items-center gap-4 text-sm text-gray-400 mt-2">
-          <span>{incompleteTasks.length} offene Aufgaben</span>
-          {completedTasks.length > 0 && (
-            <span>{completedTasks.length} erledigt</span>
-          )}
-        </div>
-      </header>
-
-      {/* Add Task - Mobile optimized */}
-      <div className="mb-6">
-        <AddTask onAdd={handleAddTask} />
-      </div>
-
-      {/* Motivational Message */}
-      {tasks.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="mb-4">
-            <svg className="w-20 h-20 mx-auto text-yellow-500/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
+      <PullToRefresh onRefresh={async () => {
+        await refetch();
+      }}>
+        <header className="mb-6">
+          <h1 className="text-2xl font-bold text-theme-primary mb-4">Heute</h1>
+          <div className="flex items-center gap-4 text-sm text-gray-400">
+            <span>{incompleteTasks.length} offene Aufgaben</span>
+            {completedTasks.length > 0 && (
+              <span>{completedTasks.length} erledigt</span>
+            )}
           </div>
-          <h3 className="text-xl font-medium text-white mb-2">Guten Tag! ☀️</h3>
-          <p className="text-gray-400 max-w-md mx-auto">
-            Ein neuer Tag beginnt! Füge deine erste Aufgabe hinzu und starte produktiv in den Tag.
-          </p>
+        </header>
+
+        <div className="mb-6">
+          <AddTask onAdd={handleAddTask} />
         </div>
-      ) : incompleteTasks.length === 0 && completedTasks.length > 0 ? (
-        <div className="text-center py-12 mb-8">
-          <div className="mb-4">
-            <svg className="w-16 h-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+        {tasks.length === 0 ? (
+          <div className="text-center py-12">
+            <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
+            <h3 className="text-lg font-medium text-theme-primary mb-2">Keine Aufgaben für heute</h3>
+            <p className="text-gray-400">
+              Fügen Sie Ihre erste Aufgabe für heute hinzu oder setzen Sie ein Fälligkeitsdatum für eine bestehende Aufgabe.
+            </p>
           </div>
-          <h3 className="text-xl font-medium text-white mb-2">Fantastisch! 🎉</h3>
-          <p className="text-gray-400">
-            Du hast alle Aufgaben für heute erledigt. Großartige Arbeit!
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Incomplete Tasks */}
-          {incompleteTasks.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-white">
-                  Heute ({incompleteTasks.length})
+        ) : (
+          <div className="space-y-6">
+            {/* Incomplete Tasks */}
+            {incompleteTasks.length > 0 && (
+              <div>
+                <h2 className="text-lg font-semibold text-theme-primary mb-4">
+                  Aufgaben ({incompleteTasks.length})
                 </h2>
-                
-                {/* Priority Distribution */}
-                <div className="flex items-center gap-2 text-xs">
-                  {[2, 1, 0].map(priority => {
-                    const count = incompleteTasks.filter(t => t.priority === priority).length;
-                    const colors: Record<number, string> = { 2: 'text-red-500', 1: 'text-orange-500', 0: 'text-gray-500' };
-                    const emojis: Record<number, string> = { 2: '🔴', 1: '🟡', 0: '🔘' };
-                    
-                    return count > 0 ? (
-                      <span key={priority} className={`${colors[priority]} flex items-center gap-1`}>
-                        {emojis[priority]} {count}
-                      </span>
-                    ) : null;
-                  })}
-                </div>
-              </div>
-              
-              <DragDropTaskList
-                tasks={incompleteTasks}
-                onTaskToggle={toggleComplete}
-                onTaskUpdate={updateTask}
-                onTaskDelete={deleteTask}
-                onTaskReorder={handleTaskReorder}
-                listColor="#3b82f6"
-              />
-            </div>
-          )}
-
-          {/* Completed Tasks */}
-          {completedTasks.length > 0 && (
-            <div className="pt-6 border-t border-gray-800">
-              <h2 className="text-lg font-semibold text-gray-300 mb-4">
-                Erledigt ({completedTasks.length}) ✅
-              </h2>
-              <div className="opacity-60">
                 <DragDropTaskList
-                  tasks={completedTasks}
+                  tasks={incompleteTasks}
                   onTaskToggle={toggleComplete}
                   onTaskUpdate={updateTask}
                   onTaskDelete={deleteTask}
-                  onTaskReorder={() => {}} // No reordering for completed tasks
+                  onTaskReorder={handleTaskReorder}
                   listColor="#3b82f6"
                 />
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+
+            {/* Completed Tasks */}
+            {completedTasks.length > 0 && (
+              <div className="pt-6 border-t border-gray-800">
+                <h2 className="text-lg font-semibold text-gray-300 mb-4">
+                  Erledigt ({completedTasks.length})
+                </h2>
+                <div className="opacity-60">
+                  <DragDropTaskList
+                    tasks={completedTasks}
+                    onTaskToggle={toggleComplete}
+                    onTaskUpdate={updateTask}
+                    onTaskDelete={deleteTask}
+                    onTaskReorder={() => {}} // No reordering for completed tasks
+                    listColor="#3b82f6"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </PullToRefresh>
     </div>
   );
 }

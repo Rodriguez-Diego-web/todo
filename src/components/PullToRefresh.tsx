@@ -1,100 +1,90 @@
-import { useEffect, useRef, useState } from 'react';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import type { ReactNode } from 'react';
 
 interface PullToRefreshProps {
   onRefresh: () => Promise<void>;
-  children: React.ReactNode;
+  children: ReactNode;
   pullDistance?: number;
-  resistance?: number;
+  refreshThreshold?: number;
 }
 
 export function PullToRefresh({
   onRefresh,
   children,
-  pullDistance = 80,
-  resistance = 2.5
+  pullDistance = 100,
+  refreshThreshold = 70,
 }: PullToRefreshProps) {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [pullStart, setPullStart] = useState(0);
-  const [pullMove, setPullMove] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    let startY = 0;
-    let currentY = 0;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      // Nur am Anfang der Seite Pull-to-Refresh aktivieren
-      if (window.scrollY === 0) {
-        startY = e.touches[0].clientY;
-        currentY = startY;
-        setPullStart(startY);
-      }
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (startY === 0) return;
-
-      currentY = e.touches[0].clientY;
-      const pull = currentY - startY;
-
-      // Nur nach unten ziehen erlauben
-      if (pull > 0) {
-        e.preventDefault();
-        setPullMove(pull / resistance);
-      }
-    };
-
-    const handleTouchEnd = async () => {
-      if (pullMove > pullDistance) {
-        setIsRefreshing(true);
-        try {
-          await onRefresh();
-        } finally {
-          setIsRefreshing(false);
-        }
-      }
-      setPullStart(0);
-      setPullMove(0);
-    };
-
-    container.addEventListener('touchstart', handleTouchStart, { passive: false });
-    container.addEventListener('touchmove', handleTouchMove, { passive: false });
-    container.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', handleTouchMove);
-      container.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [onRefresh, pullDistance, resistance, pullMove]);
+  const { containerRef, pullProgress, isPulling, isRefreshing } = usePullToRefresh({
+    onRefresh,
+    pullDistance,
+    refreshThreshold,
+  });
 
   return (
-    <div ref={containerRef} className="relative min-h-full">
+    <div className="relative h-full w-full" ref={containerRef}>
       {/* Pull indicator */}
       <div
-        className="absolute left-0 right-0 flex items-center justify-center transition-transform duration-200"
+        className={`absolute left-0 right-0 flex justify-center transition-transform duration-200 z-10 ${
+          isPulling || isRefreshing ? 'opacity-100' : 'opacity-0'
+        }`}
         style={{
-          top: -60,
-          transform: `translateY(${pullMove}px)`,
-          opacity: pullMove / pullDistance
+          transform: isPulling
+            ? `translateY(${Math.min(pullProgress * 0.8, 80)}px)`
+            : isRefreshing
+            ? 'translateY(40px)'
+            : 'translateY(0)',
         }}
       >
-        <div className="flex flex-col items-center">
-          <div className={`w-8 h-8 border-4 border-theme-primary border-t-transparent rounded-full ${isRefreshing ? 'animate-spin' : ''}`} />
-          <span className="mt-2 text-sm text-theme-secondary">
-            {isRefreshing ? 'Aktualisiere...' : 'Ziehen zum Aktualisieren'}
-          </span>
+        <div className="bg-theme-secondary/30 backdrop-blur-sm p-2 rounded-full flex items-center justify-center">
+          {isRefreshing ? (
+            <svg
+              className="animate-spin h-6 w-6 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          ) : (
+            <svg
+              className={`h-6 w-6 text-white transition-transform duration-300 ${
+                pullProgress > 80 ? 'rotate-180' : ''
+              }`}
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M19 14l-7 7m0 0l-7-7m7 7V3"
+              />
+            </svg>
+          )}
         </div>
       </div>
 
       {/* Content */}
       <div
+        className="w-full transition-transform"
         style={{
-          transform: `translateY(${pullMove}px)`,
-          transition: pullStart === 0 ? 'transform 0.3s ease-out' : 'none'
+          transform: isPulling
+            ? `translateY(${Math.min(pullProgress * 0.6, 60)}px)`
+            : 'translateY(0)',
         }}
       >
         {children}
