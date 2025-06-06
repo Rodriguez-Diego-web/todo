@@ -55,12 +55,12 @@ function AppContent() {
 
   return (
     <>
-      <Routes>
-        <Route path="/" element={<Layout />}>
+        <Routes>
+          <Route path="/" element={<Layout />}>
           <Route index element={<DefaultRoute />} />
-          <Route path="list/:listId" element={<ListPage />} />
-        </Route>
-      </Routes>
+            <Route path="list/:listId" element={<ListPage />} />
+          </Route>
+        </Routes>
       
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </>
@@ -75,7 +75,7 @@ function App() {
           <AppContent />
         </AuthProvider>
       </ThemeProvider>
-    </Router>
+      </Router>
   );
 }
 

@@ -12,7 +12,7 @@ export function useTasks(listId?: string) {
   // Wrapper mit useCallback für loadTodayTasks
   const loadTodayTasks = useCallback(async () => {
     if (!currentUser) return;
-    
+
     try {
       setLoading(true);
       const todayTasks = await firestoreService.getTodayTasks(currentUser.uid);
@@ -49,9 +49,9 @@ export function useTasks(listId?: string) {
 
   const createTask = async (taskData: {
     title: string;
-    notes?: string;
-    dueDate?: string;
-    priority?: 0 | 1 | 2;
+      notes?: string;
+      dueDate?: string;
+      priority?: 0 | 1 | 2;
     listId?: string;
   }) => {
     if (!currentUser) throw new Error('Not authenticated');

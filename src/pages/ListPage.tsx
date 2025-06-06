@@ -122,9 +122,9 @@ export function ListPage() {
               <div className="h-12 bg-theme-secondary rounded-lg w-full"></div>
               
               <div className="space-y-3 mt-6">
-                {[1, 2, 3].map((i) => (
+            {[1, 2, 3].map((i) => (
                   <div key={i} className="h-24 bg-theme-secondary rounded-lg"></div>
-                ))}
+            ))}
               </div>
             </div>
           </div>
@@ -232,7 +232,7 @@ export function ListPage() {
                 onTaskReorder={handleTaskReorder}
                 listColor={listColor.value}
               />
-            </div>
+          </div>
           )}
 
           {/* Completed Tasks - No drag/drop needed */}
@@ -249,7 +249,7 @@ export function ListPage() {
                   onTaskDelete={deleteTask}
                   onTaskReorder={() => {}} // No reordering for completed tasks
                   listColor={listColor.value}
-                />
+                  />
               </div>
             </div>
           )}

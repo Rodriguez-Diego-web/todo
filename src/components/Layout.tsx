@@ -64,7 +64,7 @@ export function Layout() {
     >
       <svg className="w-5 h-5 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-3-3V9a5 5 0 00-10 0v5l-3 3h5m6 0v1a3 3 0 01-6 0v-1m6 0H9" />
-      </svg>
+        </svg>
       {invitations.length > 0 && (
         <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
           {invitations.length}
@@ -81,7 +81,7 @@ export function Layout() {
     >
       <svg className="w-5 h-5 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
+        </svg>
     </button>
   );
   
@@ -110,7 +110,7 @@ export function Layout() {
   const currentList = lists.find(list => list.id === listId);
   const pageTitle = currentPage === 'home' ? 'Startseite' : 
                    currentPage === 'list' && currentList ? currentList.name : '';
-
+  
   return (
     <div className="h-full bg-theme-primary flex flex-col md:flex-row">
       {/* Mobile header */}
@@ -164,8 +164,8 @@ export function Layout() {
             <div className="overflow-y-auto flex-1">
               <div className="px-4 py-2">
                 <h2 className="text-xs font-semibold text-theme-secondary uppercase tracking-wider">Meine Listen</h2>
-              </div>
-              
+                </div>
+            
               <ListSidebar onNavigate={() => setSidebarOpen(false)} />
             </div>
             
@@ -281,7 +281,7 @@ export function Layout() {
               Benachrichtigungen
             </button>
           </div>
-        </div>
+              </div>
         
         {/* Logo - fixed at bottom */}
         <div className="flex-shrink-0 border-t border-theme-primary">

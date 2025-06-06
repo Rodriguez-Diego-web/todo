@@ -20,7 +20,7 @@ export interface List {
   color: string;
   createdAt: Date | string;
   updatedAt: Date | string;
-  ownerId: string;
+  createdBy: string;     // ID des Erstellers
   sharedWith?: {
     userId: string;
     role: 'editor' | 'viewer';

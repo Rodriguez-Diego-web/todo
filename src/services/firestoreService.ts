@@ -21,14 +21,31 @@ export class FirestoreService {
   
   // Get all lists for a user
   async getUserLists(userId: string): Promise<List[]> {
-    const q = query(
-      collection(db, 'lists'),
-      where('createdBy', '==', userId),
-      orderBy('updatedAt', 'desc')
-    );
-    
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as List));
+    console.log('getUserLists called with userId:', userId);
+    try {
+      const q = query(
+        collection(db, 'lists'),
+        where('createdBy', '==', userId),
+        orderBy('updatedAt', 'desc')
+      );
+      
+      console.log('Executing query for user lists...');
+      const snapshot = await getDocs(q);
+      console.log('Query result:', {
+        size: snapshot.size,
+        docs: snapshot.docs.map(doc => ({
+          id: doc.id,
+          data: doc.data()
+        }))
+      });
+      
+      const lists = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as List));
+      console.log('Mapped lists:', lists);
+      return lists;
+    } catch (error) {
+      console.error('Error in getUserLists:', error);
+      throw error;
+    }
   }
 
   // Get shared lists for a user
@@ -45,13 +62,22 @@ export class FirestoreService {
 
   // Create a new list
   async createList(list: Omit<List, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const docRef = await addDoc(collection(db, 'lists'), {
-      ...list,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      sharedWith: list.sharedWith || []
-    });
-    return docRef.id;
+    console.log('FirestoreService.createList called with:', list);
+    try {
+      const listData = {
+        ...list,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        sharedWith: list.sharedWith || []
+      };
+      console.log('Creating list with data:', listData);
+      const docRef = await addDoc(collection(db, 'lists'), listData);
+      console.log('List created with ID:', docRef.id);
+      return docRef.id;
+    } catch (error) {
+      console.error('Error in createList:', error);
+      throw error;
+    }
   }
 
   // Update a list
@@ -88,16 +114,41 @@ export class FirestoreService {
 
   // Listen to user's lists in real-time
   subscribeToUserLists(userId: string, callback: (lists: List[]) => void): Unsubscribe {
+    console.log('subscribeToUserLists called with userId:', userId);
+    
     const q = query(
       collection(db, 'lists'),
       where('createdBy', '==', userId),
       orderBy('updatedAt', 'desc')
     );
     
-    return onSnapshot(q, (snapshot) => {
-      const lists = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as List));
-      callback(lists);
-    });
+    console.log('Setting up real-time listener for user lists...');
+    
+    const unsubscribe = onSnapshot(
+      q, 
+      (snapshot) => {
+        console.log('Real-time update received:', {
+          size: snapshot.size,
+          docs: snapshot.docs.map(doc => ({
+            id: doc.id,
+            data: doc.data()
+          }))
+        });
+        
+        const lists = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as List));
+        console.log('Mapped lists in real-time update:', lists);
+        callback(lists);
+      },
+      (error) => {
+        console.error('Error in real-time listener:', error);
+      }
+    );
+    
+    // Return the unsubscribe function
+    return () => {
+      console.log('Unsubscribing from user lists');
+      unsubscribe();
+    };
   }
 
   // Listen to shared lists in real-time
@@ -227,7 +278,7 @@ export class FirestoreService {
     const listDoc = await getDoc(doc(db, 'lists', listId));
     if (listDoc.exists()) {
       const listData = listDoc.data() as List;
-      if (listData.ownerId === userId) return true;
+      if (listData.createdBy === userId) return true;
       
       // Check if user is in sharedWith
       if (listData.sharedWith) {

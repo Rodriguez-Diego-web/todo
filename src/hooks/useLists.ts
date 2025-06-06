@@ -71,15 +71,22 @@ export function useLists() {
     try {
       const newListData: Omit<List, 'id' | 'createdAt' | 'updatedAt'> = {
         name,
-        ownerId: currentUser.uid,
+        createdBy: currentUser.uid,
         color: '#3b82f6', // Standard-Blau als Standardfarbe
         sharedWith: [],
       };
       
+      console.log('Creating new list with data:', newListData);
       const listId = await firestoreService.createList(newListData);
+      console.log('List created with ID:', listId);
       
       // The real-time listener will update the state automatically
-      return { id: listId, ...newListData };
+      return { 
+        id: listId, 
+        ...newListData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create list');
       throw err;
